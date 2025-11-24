@@ -740,48 +740,52 @@ class Dashboard:
                 if all_crypto_buys:
                     display_count = min(len(all_crypto_buys), 50)  # Increased from 20 to 50
                     st.markdown(f"### 🚀 Top {display_count} Best Crypto Buys Right Now")
-                    for i, opp in enumerate(all_crypto_buys[:50], 1):  # Show up to 50 cryptos
-                        with st.container():
-                            col1, col2, col3 = st.columns([2, 2, 1])
-                            with col1:
-                                action_badge = "🔥 STRONG BUY" if opp.get('action') == 'STRONG_BUY' else "🟢 BUY"
-                                st.markdown(f"**#{i} {opp.get('symbol')}** - CRYPTO - {action_badge}")
-                                st.markdown(f"Current: ${opp.get('current_price', 0):,.2f} → Target: ${opp.get('target_price', 0):,.2f}")
-                            with col2:
-                                profit_pct = opp.get('profit_potential', 0) * 100
-                                st.metric("Profit Potential", f"+{profit_pct:.1f}%")
-                                st.metric("AI Confidence", f"{opp.get('profit_score', 0) * 100:.1f}%")
-                            with col3:
-                                if opp.get('action') == 'STRONG_BUY':
-                                    st.markdown("### 🔥")
-                                    st.markdown("**STRONG BUY**")
-                                else:
-                                    st.markdown("### 🟢")
-                                    st.markdown("**BUY NOW**")
-                            st.divider()
+                    # Use compact table format instead of individual containers
+                    compact_data = []
+                    for i, opp in enumerate(all_crypto_buys[:50], 1):
+                        action_badge = "🔥 STRONG BUY" if opp.get('action') == 'STRONG_BUY' else "🟢 BUY"
+                        profit_pct = opp.get('profit_potential', 0) * 100
+                        confidence = opp.get('profit_score', 0) * 100
+                        current_price = opp.get('current_price', 0)
+                        target_price = opp.get('target_price', 0)
+                        compact_data.append({
+                            '#': f"#{i}",
+                            'Symbol': opp.get('symbol'),
+                            'Action': action_badge,
+                            'Price': f"${current_price:,.4f}",
+                            'Target': f"${target_price:,.4f}",
+                            'Profit': f"+{profit_pct:.1f}%",
+                            'Confidence': f"{confidence:.1f}%"
+                        })
+                    
+                    if compact_data:
+                        compact_df = pd.DataFrame(compact_data)
+                        st.dataframe(compact_df, use_container_width=True, hide_index=True, height=600)
                 
                 # Show stock recommendations (fewer, up to 5)
                 if all_stock_buys:
                     st.markdown(f"### 📈 Top {min(len(all_stock_buys), 5)} Best Stock Buys Right Now")
-                    for i, opp in enumerate(all_stock_buys[:5], 1):  # Show up to 5 stocks
-                        with st.container():
-                            col1, col2, col3 = st.columns([2, 2, 1])
-                            with col1:
-                                action_badge = "🔥 STRONG BUY" if opp.get('action') == 'STRONG_BUY' else "🟢 BUY"
-                                st.markdown(f"**#{i} {opp.get('symbol')}** - STOCK - {action_badge}")
-                                st.markdown(f"Current: ${opp.get('current_price', 0):,.2f} → Target: ${opp.get('target_price', 0):,.2f}")
-                            with col2:
-                                profit_pct = opp.get('profit_potential', 0) * 100
-                                st.metric("Profit Potential", f"+{profit_pct:.1f}%")
-                                st.metric("AI Confidence", f"{opp.get('profit_score', 0) * 100:.1f}%")
-                            with col3:
-                                if opp.get('action') == 'STRONG_BUY':
-                                    st.markdown("### 🔥")
-                                    st.markdown("**STRONG BUY**")
-                                else:
-                                    st.markdown("### 🟢")
-                                    st.markdown("**BUY NOW**")
-                            st.divider()
+                    # Use compact table format
+                    stock_data = []
+                    for i, opp in enumerate(all_stock_buys[:5], 1):
+                        action_badge = "🔥 STRONG BUY" if opp.get('action') == 'STRONG_BUY' else "🟢 BUY"
+                        profit_pct = opp.get('profit_potential', 0) * 100
+                        confidence = opp.get('profit_score', 0) * 100
+                        current_price = opp.get('current_price', 0)
+                        target_price = opp.get('target_price', 0)
+                        stock_data.append({
+                            '#': f"#{i}",
+                            'Symbol': opp.get('symbol'),
+                            'Action': action_badge,
+                            'Price': f"${current_price:,.2f}",
+                            'Target': f"${target_price:,.2f}",
+                            'Profit': f"+{profit_pct:.1f}%",
+                            'Confidence': f"{confidence:.1f}%"
+                        })
+                    
+                    if stock_data:
+                        stock_df = pd.DataFrame(stock_data)
+                        st.dataframe(stock_df, use_container_width=True, hide_index=True, height=200)
         
         # Explanation
         explanation = """
