@@ -326,7 +326,7 @@ class UltraAdvancedMLModels:
         model.compile(optimizer=AdamW(learning_rate=0.0001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_ensemble_deep_model(self) -> Dict[str, Model]:
+    def _create_ensemble_deep_model(self) -> Dict[str, Any]:
         """Create ensemble of deep learning models."""
         return {
             'lstm': self._create_lstm_model(),
