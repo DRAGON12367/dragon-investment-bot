@@ -1136,13 +1136,13 @@ class Dashboard:
                     if compact_data:
                         st.write(f"🔍 DEBUG: Compact data has {len(compact_data)} rows")
                         compact_df = pd.DataFrame(compact_data)
-                        # Force display ALL rows - no pagination
+                        # Force display ALL rows - use large height to show all 50 rows
                         # Mobile-friendly: horizontal scroll on small screens, full width on large
                         st.dataframe(
                             compact_df, 
                             use_container_width=True, 
                             hide_index=True, 
-                            height=None,  # Auto height to show all rows
+                            height=1500,  # Large height to show all 50 rows (30px per row * 50 = 1500px)
                             column_config={
                                 "Symbol": st.column_config.TextColumn("Symbol", width="small"),
                                 "Action": st.column_config.TextColumn("Action", width="medium"),
