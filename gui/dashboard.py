@@ -270,10 +270,10 @@ class Dashboard:
                     else:
                         progress_callback(15, "Fetching market data...")
                 try:
-                    # Add timeout to prevent hanging
+                    # Add shorter timeout to prevent hanging - use fallback if slow
                     market_data = await asyncio.wait_for(
                         self.broker_client.get_all_market_data(fast_load=fast_load),
-                        timeout=45.0  # 45 second timeout
+                        timeout=15.0  # Reduced from 45 to 15 seconds - faster response
                     )
                     self.logger.info(f"Fetched market data: {len(market_data) if market_data else 0} assets")
                     
@@ -291,10 +291,11 @@ class Dashboard:
                     else:
                         self.logger.warning(f"⚠️ API returned empty data - may be rate limited")
                 except asyncio.TimeoutError:
-                    self.logger.error("❌ Market data fetch timed out after 45 seconds")
-                    market_data = {}
+                    self.logger.warning("⚠️ Market data fetch timed out after 15 seconds - using fallback")
+                    # Use fallback immediately on timeout
+                    market_data = self._create_fallback_data()
                     if progress_callback:
-                        progress_callback(25, "⚠️ Fetch timed out - trying cached data...")
+                        progress_callback(25, f"Using fallback data: {len(market_data)} assets (API slow)")
                 except Exception as fetch_error:
                     self.logger.error(f"❌ Error in market data fetch: {fetch_error}")
                     market_data = {}
@@ -350,10 +351,14 @@ class Dashboard:
             if progress_callback:
                 progress_callback(30, "Analyzing profit opportunities...")
             
-            # Run all analysis operations in parallel for speed
+            # Run all analysis operations in parallel for speed with timeouts
             async def analyze_opportunities():
                 try:
-                    opps = self.profit_analyzer.analyze_opportunities(market_data)
+                    # Add timeout to prevent hanging
+                    opps = await asyncio.wait_for(
+                        asyncio.to_thread(self.profit_analyzer.analyze_opportunities, market_data),
+                        timeout=10.0  # 10 second timeout for analysis
+                    )
                     # Get many more opportunities - prioritize crypto
                     all_opps = self.profit_analyzer.get_top_opportunities(opps, limit=100)  # Get up to 100
                     # Separate crypto and stock, prioritize crypto
@@ -361,6 +366,9 @@ class Dashboard:
                     stock_opps = [o for o in all_opps if o.get('asset_type') == 'stock']
                     # Return up to 50 cryptos + 20 stocks
                     return (crypto_opps[:50] + stock_opps[:20])
+                except asyncio.TimeoutError:
+                    self.logger.warning("Profit analyzer timed out - returning empty")
+                    return []
                 except Exception as e:
                     print(f"Error in profit analyzer: {e}")
                     return []
@@ -368,8 +376,11 @@ class Dashboard:
             async def predict_best_buys():
                 """Use insane prediction algorithms to find best buys."""
                 try:
-                    return self.insane_predictions.predict_best_buys(market_data, limit=20)
-                except Exception as e:
+                    return await asyncio.wait_for(
+                        asyncio.to_thread(self.insane_predictions.predict_best_buys, market_data, 20),
+                        timeout=10.0
+                    )
+                except (asyncio.TimeoutError, Exception) as e:
                     print(f"Error in insane predictions: {e}")
                     return []
             
@@ -380,44 +391,71 @@ class Dashboard:
                         symbol: st.session_state.price_history.get(symbol, [])
                         for symbol in market_data.keys()
                     }
-                    return self.crash_detection.detect_crashes(market_data, price_history_dict)
-                except Exception as e:
+                    return await asyncio.wait_for(
+                        asyncio.to_thread(self.crash_detection.detect_crashes, market_data, price_history_dict),
+                        timeout=5.0
+                    )
+                except (asyncio.TimeoutError, Exception) as e:
                     print(f"Error in crash detection: {e}")
                     return []
             
             async def analyze_sell_signals():
                 try:
-                    return self.profit_analyzer.analyze_sell_signals(market_data)
-                except Exception as e:
+                    return await asyncio.wait_for(
+                        asyncio.to_thread(self.profit_analyzer.analyze_sell_signals, market_data),
+                        timeout=5.0
+                    )
+                except (asyncio.TimeoutError, Exception) as e:
                     print(f"Error analyzing sell signals: {e}")
                     return []
             
             async def generate_signals():
                 try:
-                    return await self.strategy.generate_signals(market_data)
-                except Exception as e:
+                    return await asyncio.wait_for(
+                        self.strategy.generate_signals(market_data),
+                        timeout=10.0
+                    )
+                except (asyncio.TimeoutError, Exception) as e:
                     print(f"Error generating signals: {e}")
                     return []
             
             async def get_portfolio():
                 try:
-                    return await self.broker_client.get_portfolio_status()
-                except Exception as e:
+                    return await asyncio.wait_for(
+                        self.broker_client.get_portfolio_status(),
+                        timeout=5.0
+                    )
+                except (asyncio.TimeoutError, Exception) as e:
                     print(f"Error getting portfolio: {e}")
                     return {'total_value': 0, 'cash': 0, 'positions': []}
             
             if progress_callback:
-                progress_callback(40, "Running AI analysis...")
+                progress_callback(40, "Running AI analysis (with timeouts)...")
             
-            # Run all operations in parallel
-            top_opportunities, sell_signals, signals, portfolio, best_buy_predictions, crash_alerts = await asyncio.gather(
-                analyze_opportunities(),
-                analyze_sell_signals(),
-                generate_signals(),
-                get_portfolio(),
-                predict_best_buys(),
-                detect_crashes()
-            )
+            # Run all operations in parallel with individual timeouts
+            try:
+                top_opportunities, sell_signals, signals, portfolio, best_buy_predictions, crash_alerts = await asyncio.wait_for(
+                    asyncio.gather(
+                        analyze_opportunities(),
+                        analyze_sell_signals(),
+                        generate_signals(),
+                        get_portfolio(),
+                        predict_best_buys(),
+                        detect_crashes(),
+                        return_exceptions=True  # Don't fail if one fails
+                    ),
+                    timeout=20.0  # Total timeout for all analysis
+                )
+                # Handle exceptions in results
+                top_opportunities = top_opportunities if not isinstance(top_opportunities, Exception) else []
+                sell_signals = sell_signals if not isinstance(sell_signals, Exception) else []
+                signals = signals if not isinstance(signals, Exception) else []
+                portfolio = portfolio if not isinstance(portfolio, Exception) else {'total_value': 0, 'cash': 0, 'positions': []}
+                best_buy_predictions = best_buy_predictions if not isinstance(best_buy_predictions, Exception) else []
+                crash_alerts = crash_alerts if not isinstance(crash_alerts, Exception) else []
+            except asyncio.TimeoutError:
+                self.logger.warning("Analysis timed out - using empty results")
+                top_opportunities, sell_signals, signals, portfolio, best_buy_predictions, crash_alerts = [], [], [], {'total_value': 0, 'cash': 0, 'positions': []}, [], []
             
             if progress_callback:
                 progress_callback(70, f"Found {len(top_opportunities)} opportunities, {len(sell_signals)} sell signals")
@@ -2382,9 +2420,9 @@ def main():
         if fast_load:
             update_progress(5, "Fast loading top assets (first load)...")
         
-        # Update data with progress callback and timeout to prevent hanging
+        # Update data with progress callback and shorter timeout to prevent hanging
         try:
-            timeout = 30.0 if fast_load else 60.0  # Shorter timeout for fast load
+            timeout = 20.0 if fast_load else 30.0  # Much shorter timeouts - 20s for fast, 30s for full
             loop.run_until_complete(asyncio.wait_for(
                 dashboard.update_data(progress_callback=update_progress, fast_load=fast_load), 
                 timeout=timeout
@@ -2393,9 +2431,13 @@ def main():
             update_progress(100, "✅ Complete!")
             st.session_state.data_loaded = True  # Mark as loaded
         except asyncio.TimeoutError:
-            update_progress(100, "⚠️ Update timed out - showing cached data")
-            status_text.warning("Update took too long, showing last known data")
+            update_progress(100, "⚠️ Update timed out - showing available data")
+            status_text.warning("⚠️ Update took too long - showing available data. Refresh to try again.")
             st.session_state.data_loaded = True  # Mark as loaded even on timeout
+            # Ensure we have at least fallback data
+            if 'market_data' not in st.session_state or len(st.session_state.get('market_data', {})) == 0:
+                st.session_state.market_data = dashboard._create_fallback_data()
+                st.session_state.last_update = datetime.now()
         
         # Clear progress after a moment
         import time
