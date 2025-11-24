@@ -23,13 +23,13 @@ class CryptoDataProvider:
         self.logger = logging.getLogger("ai_investment_bot.crypto")
         self.session: Optional[aiohttp.ClientSession] = None
         
-        # Rate limiting and caching - INCREASED to reduce API calls
+        # Rate limiting and caching - Reduced for live 24/7 data
         self.last_fetch_time = 0
         self.cached_data = {}
-        self.cache_duration = 600  # Cache for 10 minutes to reduce API calls and avoid rate limits
-        self.rate_limit_delay = 1  # Reduced delay for faster initial load (was 3)
-        self.max_retries = 2  # Reduced retries for faster failure (was 3)
-        self.retry_delays = [5, 15]  # Shorter delays for faster recovery (was [10, 30, 60])
+        self.cache_duration = 60  # Cache for 1 minute only - prioritize fresh data
+        self.rate_limit_delay = 0.5  # Minimal delay for faster updates
+        self.max_retries = 3  # More retries to ensure we get data
+        self.retry_delays = [2, 5, 10]  # Shorter delays for faster recovery
         
         # Detect if we're running in Streamlit
         import sys
@@ -257,9 +257,9 @@ class CryptoDataProvider:
         market_data = {}
         
         try:
-            # CoinGecko allows up to 250 IDs per request - use more for faster loading
-            # For initial fast load, fetch up to 100 at once
-            max_symbols = 100 if len(symbols) > 50 else len(symbols)
+            # CoinGecko allows up to 250 IDs per request - fetch all symbols for complete data
+            # Fetch all symbols in batches of 250 (CoinGecko limit)
+            max_symbols = min(250, len(symbols))  # Fetch up to 250 at once
             ids = ",".join(symbols[:max_symbols])
             url = f"{self.BASE_URL}/simple/price"
             params = {
