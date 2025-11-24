@@ -52,8 +52,10 @@ st.set_page_config(
 )
 
 # Custom CSS for professional look + Mobile optimization (Enhanced for all devices)
+# Inject CSS in head to prevent it from showing as text
 st.markdown("""
-<style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<style type="text/css">
     /* Global responsive improvements */
     * {
         box-sizing: border-box;
@@ -1360,9 +1362,6 @@ class Dashboard:
                 # Re-sort by profit_score
                 all_crypto_buys.sort(key=lambda x: x.get('profit_score', 0), reverse=True)
                 
-                # DEBUG: Log how many cryptos we have
-                st.write(f"🔍 DEBUG: Total cryptos available: {len(all_crypto_buys)}, Market data cryptos: {len(crypto_market_data)}")
-                
                 if all_crypto_buys:
                     # Always show up to 50 cryptos - FORCE display all 50
                     display_count = min(len(all_crypto_buys), 50)
@@ -1371,7 +1370,6 @@ class Dashboard:
                     compact_data = []
                     # Show exactly 50 cryptos (or all available if less than 50)
                     crypto_to_show = all_crypto_buys[:50]
-                    st.write(f"🔍 DEBUG: Showing {len(crypto_to_show)} cryptos in table")
                     
                     for i, opp in enumerate(crypto_to_show, 1):
                         action_badge = "🔥 STRONG BUY" if opp.get('action') == 'STRONG_BUY' else "🟢 BUY"
@@ -1390,7 +1388,6 @@ class Dashboard:
                         })
                     
                     if compact_data:
-                        st.write(f"🔍 DEBUG: Compact data has {len(compact_data)} rows")
                         compact_df = pd.DataFrame(compact_data)
                         # Force display ALL rows - use large height to show all 50 rows
                         # Mobile-friendly: horizontal scroll on small screens, full width on large
