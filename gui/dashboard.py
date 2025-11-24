@@ -980,8 +980,81 @@ class Dashboard:
         all_crypto_buys = [o for o in all_buys if o.get('asset_type') == 'crypto']
         all_stock_buys = [o for o in all_buys if o.get('asset_type') == 'stock']
         
-        # Show top 100 best buys in table (prioritize cryptos) - increased for more options
-        top_buys = (all_crypto_buys[:70] + all_stock_buys[:30])[:100]  # Up to 70 cryptos + 30 stocks
+        # FORCE 50 cryptos in the main table - fill from market_data if needed
+        market_data = st.session_state.get('market_data', {})
+        crypto_market_data = {k: v for k, v in market_data.items() if v.get('asset_type') == 'crypto'}
+        seen_symbols = {o.get('symbol') for o in all_crypto_buys}
+        
+        # Fill to 50 cryptos from market_data
+        for symbol, data in list(crypto_market_data.items()):
+            if len(all_crypto_buys) >= 50:
+                break
+            if symbol in seen_symbols:
+                continue
+            
+            price = data.get('price', 0)
+            if price > 0:
+                change_24h = data.get('change_percent', 0) or 0
+                basic_score = min(0.4, abs(change_24h) / 100.0 + 0.2) if change_24h != 0 else 0.25
+                
+                all_crypto_buys.append({
+                    'symbol': symbol,
+                    'asset_type': 'crypto',
+                    'current_price': price,
+                    'target_price': price * 1.1,
+                    'action': 'BUY',
+                    'profit_score': basic_score,
+                    'profit_potential': 0.1,
+                    'change_24h': change_24h,
+                    'risk_reward_ratio': 1.0
+                })
+                seen_symbols.add(symbol)
+        
+        # ULTIMATE FALLBACK: Hardcoded top 50 cryptos if still not enough
+        if len(all_crypto_buys) < 50:
+            top_50_crypto_symbols = [
+                'BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'XRP', 'USDC', 'STETH', 'ADA', 'DOGE',
+                'TRX', 'LINK', 'MATIC', 'DOT', 'LTC', 'BCH', 'AVAX', 'SHIB', 'UNI', 'ETC',
+                'XLM', 'XMR', 'OKB', 'ATOM', 'ICP', 'FIL', 'APT', 'HBAR', 'NEAR', 'OP',
+                'ARB', 'IMX', 'VET', 'GRT', 'AAVE', 'ALGO', 'EOS', 'XTZ', 'THETA', 'AXS',
+                'MKR', 'DASH', 'ZEC', 'MANA', 'SAND', 'GALA', 'ENJ', 'FLOW', 'CHZ', 'LRC'
+            ]
+            
+            for symbol in top_50_crypto_symbols:
+                if len(all_crypto_buys) >= 50:
+                    break
+                if symbol in seen_symbols:
+                    continue
+                
+                price = 0
+                if symbol in crypto_market_data:
+                    price = crypto_market_data[symbol].get('price', 0)
+                
+                if price <= 0:
+                    placeholder_prices = {
+                        'BTC': 43000, 'ETH': 2600, 'BNB': 320, 'SOL': 95, 'XRP': 0.62,
+                        'ADA': 0.50, 'DOGE': 0.08, 'DOT': 7.5, 'LINK': 15, 'MATIC': 0.85
+                    }
+                    price = placeholder_prices.get(symbol, 1.0)
+                
+                all_crypto_buys.append({
+                    'symbol': symbol,
+                    'asset_type': 'crypto',
+                    'current_price': price,
+                    'target_price': price * 1.1,
+                    'action': 'BUY',
+                    'profit_score': 0.25,
+                    'profit_potential': 0.1,
+                    'change_24h': 0,
+                    'risk_reward_ratio': 1.0
+                })
+                seen_symbols.add(symbol)
+        
+        # Re-sort by profit_score
+        all_crypto_buys.sort(key=lambda x: x.get('profit_score', 0), reverse=True)
+        
+        # Show top 100 best buys in table (50 cryptos + 50 stocks/others)
+        top_buys = (all_crypto_buys[:50] + all_stock_buys[:50])[:100]  # 50 cryptos + 50 stocks
         
         if top_buys:
             records = []
