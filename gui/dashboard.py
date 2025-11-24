@@ -223,7 +223,7 @@ class Dashboard:
         if hasattr(self.strategy, 'use_mega_50x') and self.strategy.use_mega_50x:
             self.logger.info("🚀 50X UPGRADE: Profit Guarantee System Active!")
     
-    async def update_data(self, progress_callback=None):
+    async def update_data(self, progress_callback=None, fast_load: bool = False):
         """Update market data - optimized for speed with parallel processing."""
         try:
             if progress_callback:
@@ -241,6 +241,10 @@ class Dashboard:
             cache_time_key = 'market_data_cache_time'
             cache_timeout = 1  # seconds - live updates
             
+            # For fast_load, use longer cache timeout (5 minutes) to avoid refetching
+            if fast_load:
+                cache_timeout = 300  # 5 minutes for initial fast load
+            
             if (cache_key in st.session_state and 
                 cache_time_key in st.session_state and
                 (datetime.now() - st.session_state[cache_time_key]).total_seconds() < cache_timeout):
@@ -251,9 +255,12 @@ class Dashboard:
             else:
                 # Scan markets (only if cache expired)
                 if progress_callback:
-                    progress_callback(15, "Fetching market data...")
+                    if fast_load:
+                        progress_callback(15, "Fast loading top assets...")
+                    else:
+                        progress_callback(15, "Fetching market data...")
                 try:
-                    market_data = await self.broker_client.get_all_market_data()
+                    market_data = await self.broker_client.get_all_market_data(fast_load=fast_load)
                     # Only update cache if we got data
                     if market_data and len(market_data) > 0:
                         st.session_state[cache_key] = market_data
@@ -2302,17 +2309,25 @@ def main():
         # Start at 1%
         update_progress(1, "Starting update...")
         
+        # Use fast_load on first data fetch for faster initial load
+        fast_load = 'data_loaded' not in st.session_state
+        if fast_load:
+            update_progress(5, "Fast loading top assets (first load)...")
+        
         # Update data with progress callback and timeout to prevent hanging
         try:
+            timeout = 30.0 if fast_load else 60.0  # Shorter timeout for fast load
             loop.run_until_complete(asyncio.wait_for(
-                dashboard.update_data(progress_callback=update_progress), 
-                timeout=60.0
+                dashboard.update_data(progress_callback=update_progress, fast_load=fast_load), 
+                timeout=timeout
             ))
             # Ensure we end at 100%
             update_progress(100, "✅ Complete!")
+            st.session_state.data_loaded = True  # Mark as loaded
         except asyncio.TimeoutError:
             update_progress(100, "⚠️ Update timed out - showing cached data")
             status_text.warning("Update took too long, showing last known data")
+            st.session_state.data_loaded = True  # Mark as loaded even on timeout
         
         # Clear progress after a moment
         import time

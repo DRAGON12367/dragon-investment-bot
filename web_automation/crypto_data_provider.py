@@ -27,9 +27,9 @@ class CryptoDataProvider:
         self.last_fetch_time = 0
         self.cached_data = {}
         self.cache_duration = 600  # Cache for 10 minutes to reduce API calls and avoid rate limits
-        self.rate_limit_delay = 3  # Delay between requests in seconds (increased for rate limit)
-        self.max_retries = 3
-        self.retry_delays = [10, 30, 60]  # Longer exponential backoff delays for rate limits
+        self.rate_limit_delay = 1  # Reduced delay for faster initial load (was 3)
+        self.max_retries = 2  # Reduced retries for faster failure (was 3)
+        self.retry_delays = [5, 15]  # Shorter delays for faster recovery (was [10, 30, 60])
         
         # Detect if we're running in Streamlit
         import sys
@@ -196,8 +196,10 @@ class CryptoDataProvider:
         market_data = {}
         
         try:
-            # CoinGecko allows up to 250 IDs per request, but we limit to 50 to avoid rate limits
-            ids = ",".join(symbols[:50])
+            # CoinGecko allows up to 250 IDs per request - use more for faster loading
+            # For initial fast load, fetch up to 100 at once
+            max_symbols = 100 if len(symbols) > 50 else len(symbols)
+            ids = ",".join(symbols[:max_symbols])
             url = f"{self.BASE_URL}/simple/price"
             params = {
                 "ids": ids,
@@ -255,7 +257,7 @@ class CryptoDataProvider:
                                 continue  # Retry
                     else:
                         # Use aiohttp if available
-                        await asyncio.sleep(self.rate_limit_delay)  # Delay to avoid rate limits
+                        await asyncio.sleep(0.5)  # Minimal delay for faster loading (was self.rate_limit_delay)
                         response = await self.session.get(url, params=params)
                         async with response:
                             if response.status == 200:
@@ -306,8 +308,8 @@ class CryptoDataProvider:
                 }
                 
                 try:
-                    # Add delay before market data request to avoid rate limits
-                    await asyncio.sleep(self.rate_limit_delay)
+                    # Reduced delay for faster loading (was self.rate_limit_delay)
+                    await asyncio.sleep(0.5)  # Minimal delay for faster loading
                     
                     # Use requests library wrapped in asyncio for Streamlit compatibility
                     if self.use_requests or self.session is None:
@@ -672,6 +674,10 @@ class CryptoDataProvider:
     def get_watchlist_symbols(self) -> List[str]:
         """Get default watchlist symbols."""
         return self.default_symbols.copy()
+    
+    def get_top_symbols(self, count: int = 50) -> List[str]:
+        """Get top N symbols for fast initial load."""
+        return self.default_symbols[:count]
     
     def set_watchlist(self, symbols: List[str]):
         """Set custom watchlist."""

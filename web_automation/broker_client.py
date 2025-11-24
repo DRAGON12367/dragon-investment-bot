@@ -22,15 +22,18 @@ class BrokerClient(MarketScanner):
             "positions": []
         }
     
-    async def get_all_market_data(self) -> dict:
+    async def get_all_market_data(self, fast_load: bool = False) -> dict:
         """
         Get all market data with improved error handling.
+        
+        Args:
+            fast_load: If True, only fetch top 50 cryptos and top 50 stocks for faster initial load
         
         Returns:
             Dictionary with all market data
         """
         try:
-            return await super().get_all_market_data()
+            return await super().get_all_market_data(fast_load=fast_load)
         except Exception as e:
             self.logger.error(f"Error getting market data: {e}", exc_info=True)
             # Return empty dict instead of crashing

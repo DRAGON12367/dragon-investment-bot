@@ -112,14 +112,25 @@ class MarketScanner:
             self.logger.error(f"Error scanning crypto: {e}", exc_info=True)
             return {}
     
-    async def get_all_market_data(self) -> Dict[str, Any]:
+    async def get_all_market_data(self, fast_load: bool = False) -> Dict[str, Any]:
         """
         Get all market data in a unified format.
+        
+        Args:
+            fast_load: If True, only fetch top 50 cryptos and top 50 stocks for faster initial load
         
         Returns:
             Dictionary with all symbols (stocks and crypto) keyed by symbol
         """
-        scan_results = await self.scan_markets()
+        if fast_load:
+            # Fast initial load - only top symbols
+            top_crypto = self.crypto_provider.get_top_symbols(50)
+            top_stocks = self.stock_provider.get_top_symbols(50)
+            self.logger.info(f"Fast load mode: fetching top {len(top_crypto)} crypto and top {len(top_stocks)} stocks")
+            scan_results = await self.scan_markets(stock_symbols=top_stocks, crypto_symbols=top_crypto)
+        else:
+            # Full load - all symbols
+            scan_results = await self.scan_markets()
         
         # Combine stocks and crypto into single dictionary
         all_data = {}

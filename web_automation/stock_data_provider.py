@@ -123,8 +123,8 @@ class StockDataProvider:
         market_data = {}
         
         try:
-            # Fetch data in batches to avoid rate limits
-            batch_size = 20  # Process 20 symbols at a time
+            # Fetch data in larger batches for faster loading
+            batch_size = 50  # Increased from 20 to 50 for faster loading
             for i in range(0, len(symbols), batch_size):
                 batch = symbols[i:i + batch_size]
                 self.logger.debug(f"Fetching stock batch {i//batch_size + 1}/{(len(symbols) + batch_size - 1)//batch_size}")
@@ -140,9 +140,9 @@ class StockDataProvider:
                     if result:
                         market_data[symbol] = result
                 
-                # Small delay between batches to avoid rate limits
+                # Reduced delay between batches for faster loading
                 if i + batch_size < len(symbols):
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(0.2)  # Reduced from 0.5 to 0.2 seconds
                     
         except Exception as e:
             self.logger.error(f"Error fetching stock data: {e}", exc_info=True)
@@ -265,6 +265,11 @@ class StockDataProvider:
     def get_watchlist_symbols(self) -> List[str]:
         """Get default watchlist symbols."""
         return self.default_symbols.copy()
+    
+    def get_top_symbols(self, count: int = 50) -> List[str]:
+        """Get top N symbols for fast initial load."""
+        # Return top symbols (first N from default list)
+        return self.default_symbols[:count]
     
     def set_watchlist(self, symbols: List[str]):
         """Set custom watchlist."""
