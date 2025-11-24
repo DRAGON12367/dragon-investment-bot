@@ -2597,8 +2597,8 @@ def main():
                 dashboard.update_data(progress_callback=update_progress, fast_load=fast_load), 
                 timeout=timeout
             ))
-        # Ensure we end at 100%
-        update_progress(100, "✅ Complete!")
+            # Ensure we end at 100%
+            update_progress(100, "✅ Complete!")
             st.session_state.data_loaded = True  # Mark as loaded
         except asyncio.TimeoutError:
             update_progress(100, "⚠️ Update timed out - showing available data")
