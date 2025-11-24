@@ -432,57 +432,63 @@ class Dashboard:
                         self.broker_client.get_all_market_data(fast_load=True),  # Fast load for quick response
                         timeout=10.0  # 10 seconds - balance between speed and data completeness
                     )
-                    self.logger.info(f"Fetched market data: {len(market_data) if market_data else 0} assets")
-                    
-                    # Always store what we got (even if empty) to avoid repeated failed fetches
-                    if market_data is None:
-                        market_data = {}
-                    
-                    # Update cache if we got data
-                    if len(market_data) > 0:
-                        st.session_state[cache_key] = market_data
-                        st.session_state[cache_time_key] = datetime.now()
-                        self.logger.info(f"✅ Successfully loaded {len(market_data)} assets")
-                    else:
-                        self.logger.warning(f"⚠️ API returned empty data - may be rate limited")
-                except asyncio.TimeoutError:
-                    self.logger.warning("⚠️ Market data fetch timed out - trying cached data first")
-                    # Try cached data before fallback
-                    if cache_has_data:
-                        market_data = st.session_state[cache_key]
-                        self.logger.info(f"Using cached data after timeout: {len(market_data)} assets")
-                    elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
-                        market_data = st.session_state.market_data
-                        self.logger.info(f"Using session data after timeout: {len(market_data)} assets")
-                    else:
-                        # Only use fallback if absolutely no data available
-                        market_data = self._create_fallback_data()
-                        self.logger.warning(f"⚠️ Using fallback data: {len(market_data)} assets")
-                except Exception as fetch_error:
-                    self.logger.error(f"❌ Error in market data fetch: {fetch_error}")
-                    # Try cached data before giving up
-                    if cache_has_data:
-                        market_data = st.session_state[cache_key]
-                        self.logger.info(f"Using cached data after error: {len(market_data)} assets")
-                    elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
-                        market_data = st.session_state.market_data
-                        self.logger.info(f"Using session data after error: {len(market_data)} assets")
-                    else:
-                        market_data = {}
+                self.logger.info(f"Fetched live market data: {len(market_data) if market_data else 0} assets")
                 
-                # After fetch attempt, handle empty data
-                if len(market_data) == 0:
-                    # No new data - try cached or existing session data
-                    if cache_has_data:
-                        market_data = st.session_state[cache_key]
-                        self.logger.warning(f"Fetch returned empty, using cached data: {len(market_data)} assets")
-                    elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
-                        market_data = st.session_state.market_data
-                        self.logger.warning(f"Fetch returned empty, using session data: {len(market_data)} assets")
-                    else:
-                        # Only use fallback if absolutely no data
-                        market_data = self._create_fallback_data()
-                        self.logger.warning(f"⚠️ No data available - using fallback: {len(market_data)} assets")
+                # Always store what we got (even if empty) to avoid repeated failed fetches
+                if market_data is None:
+                    market_data = {}
+                
+                # Update cache with fresh live data
+                if len(market_data) > 0:
+                    st.session_state[cache_key] = market_data
+                    st.session_state[cache_time_key] = datetime.now()
+                    self.logger.info(f"✅ Successfully loaded {len(market_data)} live assets from APIs")
+                else:
+                    self.logger.warning(f"⚠️ API returned empty data - may be rate limited")
+            except asyncio.TimeoutError:
+                self.logger.warning("⚠️ Market data fetch timed out - trying cached data as fallback")
+                # Only use cache as last resort if API completely fails
+                cache_has_data = (cache_key in st.session_state and 
+                                len(st.session_state.get(cache_key, {})) > 0)
+                if cache_has_data:
+                    market_data = st.session_state[cache_key]
+                    self.logger.warning(f"⚠️ Using cached data as fallback: {len(market_data)} assets (API timeout)")
+                elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
+                    market_data = st.session_state.market_data
+                    self.logger.warning(f"⚠️ Using session data as fallback: {len(market_data)} assets (API timeout)")
+                else:
+                    # Only use fallback if absolutely no data available
+                    market_data = self._create_fallback_data()
+                    self.logger.warning(f"⚠️ Using minimal fallback data: {len(market_data)} assets")
+            except Exception as fetch_error:
+                self.logger.error(f"❌ Error in live market data fetch: {fetch_error}")
+                # Only use cache as last resort if API completely fails
+                cache_has_data = (cache_key in st.session_state and 
+                                len(st.session_state.get(cache_key, {})) > 0)
+                if cache_has_data:
+                    market_data = st.session_state[cache_key]
+                    self.logger.warning(f"⚠️ Using cached data as fallback: {len(market_data)} assets (API error)")
+                elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
+                    market_data = st.session_state.market_data
+                    self.logger.warning(f"⚠️ Using session data as fallback: {len(market_data)} assets (API error)")
+                else:
+                    market_data = {}
+            
+            # After fetch attempt, handle empty data
+            if len(market_data) == 0:
+                # No new data - try cached or existing session data as last resort
+                cache_has_data = (cache_key in st.session_state and 
+                                len(st.session_state.get(cache_key, {})) > 0)
+                if cache_has_data:
+                    market_data = st.session_state[cache_key]
+                    self.logger.warning(f"⚠️ Fetch returned empty, using cached data: {len(market_data)} assets")
+                elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
+                    market_data = st.session_state.market_data
+                    self.logger.warning(f"⚠️ Fetch returned empty, using session data: {len(market_data)} assets")
+                else:
+                    # Only use fallback if absolutely no data
+                    market_data = self._create_fallback_data()
+                    self.logger.warning(f"⚠️ No data available - using minimal fallback: {len(market_data)} assets")
             
             # Handle empty market data gracefully - use existing data if available
             if not market_data or len(market_data) == 0:
@@ -3059,16 +3065,14 @@ def main():
         # Start at 1%
         update_progress(1, "Starting update...")
         
-        # Use fast_load on first data fetch for faster initial load
-        fast_load = 'data_loaded' not in st.session_state
-        if fast_load:
-            update_progress(5, "Fast loading top assets (first load)...")
+        # ALWAYS fetch fresh live data on every visit - no fast_load, full API calls
+        update_progress(5, "Fetching live data from APIs (24/7)...")
         
-        # Update data with progress callback and shorter timeout to prevent hanging
+        # Update data with progress callback - always full load for live data
         try:
-            timeout = 20.0 if fast_load else 30.0  # Much shorter timeouts - 20s for fast, 30s for full
+            timeout = 30.0  # 30 seconds for full live API calls
             loop.run_until_complete(asyncio.wait_for(
-                dashboard.update_data(progress_callback=update_progress, fast_load=fast_load), 
+                dashboard.update_data(progress_callback=update_progress, fast_load=False),  # Always full load for live data
                 timeout=timeout
             ))
             # Ensure we end at 100%

@@ -23,13 +23,13 @@ class CryptoDataProvider:
         self.logger = logging.getLogger("ai_investment_bot.crypto")
         self.session: Optional[aiohttp.ClientSession] = None
         
-        # Rate limiting and caching - Reduced for live 24/7 data
+        # Rate limiting and caching - Minimal cache for live 24/7 data
         self.last_fetch_time = 0
         self.cached_data = {}
-        self.cache_duration = 60  # Cache for 1 minute only - prioritize fresh data
-        self.rate_limit_delay = 0.5  # Minimal delay for faster updates
+        self.cache_duration = 10  # Cache for only 10 seconds - always fetch fresh data
+        self.rate_limit_delay = 0.3  # Minimal delay for faster updates
         self.max_retries = 3  # More retries to ensure we get data
-        self.retry_delays = [2, 5, 10]  # Shorter delays for faster recovery
+        self.retry_delays = [1, 3, 5]  # Shorter delays for faster recovery
         
         # Detect if we're running in Streamlit
         import sys
@@ -228,10 +228,10 @@ class CryptoDataProvider:
         current_time = time.time()
         cache_key = str(symbols) if symbols else "default"
         
-        # Use cached data if available and not expired
+        # Use cached data ONLY if very recent (10 seconds) - always prefer fresh API data
         if (cache_key in self.cached_data and 
             current_time - self.last_fetch_time < self.cache_duration):
-            self.logger.debug(f"Returning cached crypto data (age: {int(current_time - self.last_fetch_time)}s)")
+            self.logger.debug(f"Returning very recent cached crypto data (age: {int(current_time - self.last_fetch_time)}s)")
             return self.cached_data[cache_key]
         
         # If rate limited recently, return cached data even if stale
