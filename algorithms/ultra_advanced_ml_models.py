@@ -5,9 +5,12 @@ Ultra Advanced ML Models - 5x Upgrade
 import logging
 import pickle
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, TYPE_CHECKING
 import numpy as np
 import pandas as pd
+
+# Type checking imports - use string annotations to avoid import errors
+# Model type will be resolved at runtime if TensorFlow is available
 from sklearn.ensemble import (
     RandomForestClassifier, 
     GradientBoostingClassifier,
@@ -233,7 +236,7 @@ class UltraAdvancedMLModels:
         # Hybrid Model
         self.models['hybrid_model'] = self._create_hybrid_model()
     
-    def _create_lstm_model(self, sequence_length: int = 60, features: int = 50) -> Model:
+    def _create_lstm_model(self, sequence_length: int = 60, features: int = 50) -> Any:
         """Create LSTM model."""
         model = Sequential([
             LSTM(128, return_sequences=True, input_shape=(sequence_length, features)),
@@ -246,7 +249,7 @@ class UltraAdvancedMLModels:
         model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_gru_model(self, sequence_length: int = 60, features: int = 50) -> Model:
+    def _create_gru_model(self, sequence_length: int = 60, features: int = 50) -> Any:
         """Create GRU model."""
         model = Sequential([
             GRU(128, return_sequences=True, input_shape=(sequence_length, features)),
@@ -259,7 +262,7 @@ class UltraAdvancedMLModels:
         model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_cnn_lstm_model(self, sequence_length: int = 60, features: int = 50) -> Model:
+    def _create_cnn_lstm_model(self, sequence_length: int = 60, features: int = 50) -> Any:
         """Create CNN-LSTM hybrid model."""
         model = Sequential([
             Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=(sequence_length, features)),
@@ -274,7 +277,7 @@ class UltraAdvancedMLModels:
         model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_bidirectional_lstm_model(self, sequence_length: int = 60, features: int = 50) -> Model:
+    def _create_bidirectional_lstm_model(self, sequence_length: int = 60, features: int = 50) -> Any:
         """Create Bidirectional LSTM model."""
         model = Sequential([
             Bidirectional(LSTM(128, return_sequences=True), input_shape=(sequence_length, features)),
@@ -287,7 +290,7 @@ class UltraAdvancedMLModels:
         model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_attention_lstm_model(self, sequence_length: int = 60, features: int = 50) -> Model:
+    def _create_attention_lstm_model(self, sequence_length: int = 60, features: int = 50) -> Any:
         """Create Attention-based LSTM model."""
         inputs = Input(shape=(sequence_length, features))
         lstm_out = LSTM(128, return_sequences=True)(inputs)
@@ -300,7 +303,7 @@ class UltraAdvancedMLModels:
         model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_transformer_model(self, sequence_length: int = 60, features: int = 50, d_model: int = 128) -> Model:
+    def _create_transformer_model(self, sequence_length: int = 60, features: int = 50, d_model: int = 128) -> Any:
         """Create Transformer model."""
         inputs = Input(shape=(sequence_length, features))
         
@@ -331,7 +334,7 @@ class UltraAdvancedMLModels:
             'cnn_lstm': self._create_cnn_lstm_model()
         }
     
-    def _create_hybrid_model(self) -> Model:
+    def _create_hybrid_model(self) -> Any:
         """Create hybrid model combining CNN, LSTM, and Transformer."""
         sequence_length = 60
         features = 50
