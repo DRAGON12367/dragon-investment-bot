@@ -37,12 +37,12 @@ from gui.professional_charts import ProfessionalCharts
 from algorithms.professional_analysis import ProfessionalAnalysis
 
 
-# Page configuration - Mobile friendly
+# Page configuration - Mobile friendly and responsive
 st.set_page_config(
     page_title="AI Investment Bot - Live Dashboard",
     page_icon="📈",
-    layout="wide",
-    initial_sidebar_state="expanded",
+    layout="wide",  # Wide layout works better on mobile with our CSS
+    initial_sidebar_state="expanded",  # Can be collapsed on mobile
     menu_items={
         'Get Help': None,
         'Report a bug': None,
@@ -50,46 +50,202 @@ st.set_page_config(
     }
 )
 
-# Custom CSS for professional look + Mobile optimization
+# Custom CSS for professional look + Mobile optimization (Enhanced for all devices)
 st.markdown("""
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <style>
-    /* Mobile-friendly responsive design */
-    @media screen and (max-width: 768px) {
+    /* Global responsive improvements */
+    * {
+        box-sizing: border-box;
+    }
+    
+    /* Mobile-first responsive design */
+    @media screen and (max-width: 480px) {
+        /* Extra small phones */
         .main-header {
-            font-size: 2rem !important;
+            font-size: 1.5rem !important;
+            padding: 0.5rem 0 !important;
         }
         .metric-card {
             padding: 0.5rem !important;
+            margin: 0.25rem 0 !important;
+        }
+        .stDataFrame {
+            font-size: 0.7rem !important;
+        }
+        .stMetric {
+            font-size: 0.9rem !important;
+        }
+        [data-testid="stMetricValue"] {
+            font-size: 1.2rem !important;
+        }
+        [data-testid="stMetricLabel"] {
+            font-size: 0.75rem !important;
+        }
+        /* Make tables horizontally scrollable on mobile */
+        .stDataFrame > div {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        /* Compact columns on mobile */
+        [data-testid="column"] {
+            padding: 0.25rem !important;
+        }
+        /* Smaller buttons */
+        button {
+            font-size: 0.85rem !important;
+            padding: 0.4rem 0.8rem !important;
+        }
+    }
+    
+    @media screen and (min-width: 481px) and (max-width: 768px) {
+        /* Small tablets and large phones */
+        .main-header {
+            font-size: 2rem !important;
+            padding: 0.75rem 0 !important;
+        }
+        .metric-card {
+            padding: 0.75rem !important;
         }
         .stDataFrame {
             font-size: 0.8rem !important;
         }
+        [data-testid="stMetricValue"] {
+            font-size: 1.5rem !important;
+        }
+        /* Make tables scrollable */
+        .stDataFrame > div {
+            overflow-x: auto !important;
+        }
     }
     
+    @media screen and (min-width: 769px) and (max-width: 1024px) {
+        /* Tablets */
+        .main-header {
+            font-size: 2.5rem !important;
+        }
+        .stDataFrame {
+            font-size: 0.9rem !important;
+        }
+    }
+    
+    /* Desktop and large screens */
+    @media screen and (min-width: 1025px) {
     .main-header {
         font-size: 3rem;
+        }
+    }
+    
+    /* Base styles for all devices */
+    .main-header {
         font-weight: bold;
         color: #1f77b4;
         text-align: center;
         padding: 1rem 0;
+        word-wrap: break-word;
     }
+    
     .metric-card {
         background-color: #f0f2f6;
         padding: 1rem;
         border-radius: 0.5rem;
         border-left: 4px solid #1f77b4;
+        margin: 0.5rem 0;
     }
+    
     .positive-change {
         color: #00cc00;
         font-weight: bold;
     }
+    
     .negative-change {
         color: #ff0000;
         font-weight: bold;
     }
+    
     .stAlert {
         padding: 1rem;
+        margin: 0.5rem 0;
+    }
+    
+    /* Touch-friendly improvements for mobile */
+    @media (hover: none) and (pointer: coarse) {
+        /* Mobile touch devices */
+        button, [role="button"], a {
+            min-height: 44px !important;
+            min-width: 44px !important;
+        }
+        /* Larger tap targets */
+        .stSelectbox, .stSlider, .stCheckbox {
+            min-height: 44px !important;
+        }
+    }
+    
+    /* Horizontal scroll for tables on all small screens */
+    @media screen and (max-width: 1024px) {
+        .stDataFrame > div {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            display: block !important;
+        }
+        /* Prevent text wrapping in table cells */
+        .stDataFrame td, .stDataFrame th {
+            white-space: nowrap !important;
+        }
+    }
+    
+    /* Improve sidebar on mobile */
+    @media screen and (max-width: 768px) {
+        [data-testid="stSidebar"] {
+            width: 100% !important;
+        }
+        /* Make sidebar content scrollable */
+        [data-testid="stSidebar"] > div {
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+    }
+    
+    /* Better spacing for all devices */
+    .element-container {
+        margin-bottom: 1rem;
+    }
+    
+    @media screen and (max-width: 768px) {
+        .element-container {
+            margin-bottom: 0.75rem;
+        }
+    }
+    
+    /* Improve chart responsiveness */
+    .js-plotly-plot {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* Better text readability on small screens */
+    @media screen and (max-width: 768px) {
+        p, li, span {
+            font-size: 0.9rem !important;
+            line-height: 1.5 !important;
+        }
+        h1 { font-size: 1.75rem !important; }
+        h2 { font-size: 1.5rem !important; }
+        h3 { font-size: 1.25rem !important; }
+        h4 { font-size: 1.1rem !important; }
+    }
+    
+    /* Loading spinner improvements */
+    .stProgress > div > div {
+        background-color: #1f77b4 !important;
+    }
+    
+    /* Better contrast for accessibility */
+    @media (prefers-color-scheme: dark) {
+        .metric-card {
+            background-color: #2d2d2d;
+            color: #ffffff;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
@@ -194,7 +350,7 @@ class Dashboard:
             await asyncio.wait_for(self.scanner.connect(), timeout=5.0)
         except asyncio.TimeoutError:
             self.logger.warning("Scanner connection timed out, continuing...")
-        except Exception as e:
+            except Exception as e:
             self.logger.warning(f"Scanner init error (non-critical): {e}")
         
         try:
@@ -268,7 +424,7 @@ class Dashboard:
                     if fast_load:
                         progress_callback(15, "Fast loading top assets...")
                     else:
-                        progress_callback(15, "Fetching market data...")
+                    progress_callback(15, "Fetching market data...")
                 try:
                     # Add shorter timeout to prevent hanging - use fallback if slow
                     market_data = await asyncio.wait_for(
@@ -294,34 +450,34 @@ class Dashboard:
                     self.logger.warning("⚠️ Market data fetch timed out after 15 seconds - using fallback")
                     # Use fallback immediately on timeout
                     market_data = self._create_fallback_data()
-                    if progress_callback:
+                            if progress_callback:
                         progress_callback(25, f"Using fallback data: {len(market_data)} assets (API slow)")
                 except Exception as fetch_error:
                     self.logger.error(f"❌ Error in market data fetch: {fetch_error}")
-                    market_data = {}
-                    if progress_callback:
+                                market_data = {}
+                                if progress_callback:
                         progress_callback(25, f"⚠️ Fetch error: {str(fetch_error)[:50]}...")
                 
                 # After fetch attempt, handle empty data
                 if len(market_data) == 0:
                         # No new data - try cached or existing session data
                         if cache_has_data:
-                            market_data = st.session_state[cache_key]
-                            if progress_callback:
+                        market_data = st.session_state[cache_key]
+                        if progress_callback:
                                 progress_callback(25, f"Using cached data: {len(market_data)} assets")
                             self.logger.warning(f"Fetch returned empty, using cached data: {len(market_data)} assets")
-                        elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
-                            market_data = st.session_state.market_data
-                            if progress_callback:
+                    elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
+                        market_data = st.session_state.market_data
+                        if progress_callback:
                                 progress_callback(25, f"Using session data: {len(market_data)} assets")
                             self.logger.warning(f"Fetch returned empty, using session data: {len(market_data)} assets")
-                        else:
+                    else:
                             # No data at all - try to create minimal fallback data
                             self.logger.warning("⚠️ No market data from API - creating fallback sample data")
                             # Create minimal fallback to show something
                             market_data = self._create_fallback_data()
                             if len(market_data) > 0:
-                                if progress_callback:
+                        if progress_callback:
                                     progress_callback(25, f"Using fallback data: {len(market_data)} assets")
                                 self.logger.info(f"Using fallback data: {len(market_data)} assets")
                             else:
@@ -436,11 +592,11 @@ class Dashboard:
             try:
                 top_opportunities, sell_signals, signals, portfolio, best_buy_predictions, crash_alerts = await asyncio.wait_for(
                     asyncio.gather(
-                        analyze_opportunities(),
-                        analyze_sell_signals(),
-                        generate_signals(),
-                        get_portfolio(),
-                        predict_best_buys(),
+                analyze_opportunities(),
+                analyze_sell_signals(),
+                generate_signals(),
+                get_portfolio(),
+                predict_best_buys(),
                         detect_crashes(),
                         return_exceptions=True  # Don't fail if one fails
                     ),
@@ -827,7 +983,7 @@ class Dashboard:
                     compact_data = []
                     for i, opp in enumerate(all_crypto_buys[:50], 1):
                         action_badge = "🔥 STRONG BUY" if opp.get('action') == 'STRONG_BUY' else "🟢 BUY"
-                        profit_pct = opp.get('profit_potential', 0) * 100
+                            profit_pct = opp.get('profit_potential', 0) * 100
                         confidence = opp.get('profit_score', 0) * 100
                         current_price = opp.get('current_price', 0)
                         target_price = opp.get('target_price', 0)
@@ -843,7 +999,21 @@ class Dashboard:
                     
                     if compact_data:
                         compact_df = pd.DataFrame(compact_data)
-                        st.dataframe(compact_df, use_container_width=True, hide_index=True, height=600)
+                        # Mobile-friendly: horizontal scroll on small screens, full width on large
+                        st.dataframe(
+                            compact_df, 
+                            use_container_width=True, 
+                            hide_index=True, 
+                            height=600,
+                            column_config={
+                                "Symbol": st.column_config.TextColumn("Symbol", width="small"),
+                                "Action": st.column_config.TextColumn("Action", width="medium"),
+                                "Price": st.column_config.TextColumn("Price", width="small"),
+                                "Target": st.column_config.TextColumn("Target", width="small"),
+                                "Profit": st.column_config.TextColumn("Profit", width="small"),
+                                "Confidence": st.column_config.TextColumn("Confidence", width="small"),
+                            }
+                        )
                 
                 # Show stock recommendations (fewer, up to 5)
                 if all_stock_buys:
@@ -2375,7 +2545,7 @@ def main():
         # Initialize with timeout to prevent hanging
         try:
             loop.run_until_complete(asyncio.wait_for(dashboard.initialize(), timeout=30.0))
-            init_status.text("✅ Dashboard ready! (100%)")
+        init_status.text("✅ Dashboard ready! (100%)")
         except asyncio.TimeoutError:
             init_status.text("⚠️ Dashboard loading (some features may be limited)...")
             print("Warning: Initialization timed out, but dashboard will still work")
@@ -2427,8 +2597,8 @@ def main():
                 dashboard.update_data(progress_callback=update_progress, fast_load=fast_load), 
                 timeout=timeout
             ))
-            # Ensure we end at 100%
-            update_progress(100, "✅ Complete!")
+        # Ensure we end at 100%
+        update_progress(100, "✅ Complete!")
             st.session_state.data_loaded = True  # Mark as loaded
         except asyncio.TimeoutError:
             update_progress(100, "⚠️ Update timed out - showing available data")
