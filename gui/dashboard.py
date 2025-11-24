@@ -450,40 +450,40 @@ class Dashboard:
                     self.logger.warning("⚠️ Market data fetch timed out after 15 seconds - using fallback")
                     # Use fallback immediately on timeout
                     market_data = self._create_fallback_data()
-                            if progress_callback:
+                    if progress_callback:
                         progress_callback(25, f"Using fallback data: {len(market_data)} assets (API slow)")
                 except Exception as fetch_error:
                     self.logger.error(f"❌ Error in market data fetch: {fetch_error}")
-                                market_data = {}
-                                if progress_callback:
+                    market_data = {}
+                    if progress_callback:
                         progress_callback(25, f"⚠️ Fetch error: {str(fetch_error)[:50]}...")
                 
                 # After fetch attempt, handle empty data
                 if len(market_data) == 0:
-                        # No new data - try cached or existing session data
-                        if cache_has_data:
+                    # No new data - try cached or existing session data
+                    if cache_has_data:
                         market_data = st.session_state[cache_key]
                         if progress_callback:
-                                progress_callback(25, f"Using cached data: {len(market_data)} assets")
-                            self.logger.warning(f"Fetch returned empty, using cached data: {len(market_data)} assets")
+                            progress_callback(25, f"Using cached data: {len(market_data)} assets")
+                        self.logger.warning(f"Fetch returned empty, using cached data: {len(market_data)} assets")
                     elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
                         market_data = st.session_state.market_data
                         if progress_callback:
-                                progress_callback(25, f"Using session data: {len(market_data)} assets")
-                            self.logger.warning(f"Fetch returned empty, using session data: {len(market_data)} assets")
+                            progress_callback(25, f"Using session data: {len(market_data)} assets")
+                        self.logger.warning(f"Fetch returned empty, using session data: {len(market_data)} assets")
                     else:
-                            # No data at all - try to create minimal fallback data
-                            self.logger.warning("⚠️ No market data from API - creating fallback sample data")
-                            # Create minimal fallback to show something
-                            market_data = self._create_fallback_data()
-                            if len(market_data) > 0:
-                        if progress_callback:
-                                    progress_callback(25, f"Using fallback data: {len(market_data)} assets")
-                                self.logger.info(f"Using fallback data: {len(market_data)} assets")
-                            else:
-                                if progress_callback:
-                                    progress_callback(25, "⚠️ No market data - API may be rate limited")
-                                self.logger.error("❌ No market data available - API may be rate limited or offline")
+                        # No data at all - try to create minimal fallback data
+                        self.logger.warning("⚠️ No market data from API - creating fallback sample data")
+                        # Create minimal fallback to show something
+                        market_data = self._create_fallback_data()
+                        if len(market_data) > 0:
+                            if progress_callback:
+                                progress_callback(25, f"Using fallback data: {len(market_data)} assets")
+                            self.logger.info(f"Using fallback data: {len(market_data)} assets")
+                        else:
+                            if progress_callback:
+                                progress_callback(25, "⚠️ No market data - API may be rate limited")
+                            self.logger.error("❌ No market data available - API may be rate limited or offline")
             
             # Handle empty market data gracefully - use existing data if available
             if not market_data or len(market_data) == 0:
