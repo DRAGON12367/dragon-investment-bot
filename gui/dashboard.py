@@ -1021,48 +1021,44 @@ class Dashboard:
                 st.success(f"🚀 {total_signals} BUY signals found ({len(all_crypto_buys)} crypto, {len(all_stock_buys)} stock) - BUY NOW!")
                 
                 # Show MANY crypto options (up to 50 cryptos)
-                # ALWAYS ensure we have at least 50 cryptos to display
+                # ALWAYS ensure we have at least 50 cryptos to display - FORCE it!
                 market_data = st.session_state.get('market_data', {})
                 crypto_market_data = {k: v for k, v in market_data.items() if v.get('asset_type') == 'crypto'}
                 
-                # If we don't have enough crypto opportunities, get more from market_data
-                if len(all_crypto_buys) < 50:  # Always ensure we have 50
-                    # Fallback: Get all cryptos from market_data and create basic opportunities
-                    seen_symbols = {o.get('symbol') for o in all_crypto_buys}
+                # ALWAYS fill to 50 cryptos from market_data if we have less
+                seen_symbols = {o.get('symbol') for o in all_crypto_buys}
+                
+                # Get ALL available cryptos from market_data and add them
+                for symbol, data in list(crypto_market_data.items()):
+                    # Stop when we have 50
+                    if len(all_crypto_buys) >= 50:
+                        break
+                    # Skip if already in all_crypto_buys
+                    if symbol in seen_symbols:
+                        continue
                     
-                    # Get up to 50 cryptos from market data (fill to 50 total)
-                    needed = 50 - len(all_crypto_buys)
-                    for symbol, data in list(crypto_market_data.items()):
-                        if len(all_crypto_buys) >= 50:
-                            break
-                        # Skip if already in all_crypto_buys
-                        if symbol in seen_symbols:
-                            continue
-                        # Skip if already in all_crypto_buys
-                        if any(o.get('symbol') == symbol for o in all_crypto_buys):
-                            continue
+                    price = data.get('price', 0)
+                    if price > 0:
+                        # Calculate a basic profit score based on 24h change
+                        change_24h = data.get('change_percent', 0) or 0
+                        # Positive change = better score, but also consider negative (oversold)
+                        basic_score = min(0.4, abs(change_24h) / 100.0 + 0.2) if change_24h != 0 else 0.25
                         
-                        price = data.get('price', 0)
-                        if price > 0:
-                            # Calculate a basic profit score based on 24h change
-                            change_24h = data.get('change_percent', 0) or 0
-                            # Positive change = better score, but also consider negative (oversold)
-                            basic_score = min(0.4, abs(change_24h) / 100.0 + 0.2) if change_24h != 0 else 0.25
-                            
-                            all_crypto_buys.append({
-                                'symbol': symbol,
-                                'asset_type': 'crypto',
-                                'current_price': price,
-                                'target_price': price * 1.1,  # 10% target
-                                'action': 'BUY',
-                                'profit_score': basic_score,  # Dynamic score based on change
-                                'profit_potential': 0.1,
-                                'change_24h': change_24h,
-                                'risk_reward_ratio': 1.0
-                            })
-                    
-                    # Re-sort by profit_score
-                    all_crypto_buys.sort(key=lambda x: x.get('profit_score', 0), reverse=True)
+                        all_crypto_buys.append({
+                            'symbol': symbol,
+                            'asset_type': 'crypto',
+                            'current_price': price,
+                            'target_price': price * 1.1,  # 10% target
+                            'action': 'BUY',
+                            'profit_score': basic_score,  # Dynamic score based on change
+                            'profit_potential': 0.1,
+                            'change_24h': change_24h,
+                            'risk_reward_ratio': 1.0
+                        })
+                        seen_symbols.add(symbol)  # Track what we added
+                
+                # Re-sort by profit_score
+                all_crypto_buys.sort(key=lambda x: x.get('profit_score', 0), reverse=True)
                 
                 if all_crypto_buys:
                     # Always show up to 50 cryptos

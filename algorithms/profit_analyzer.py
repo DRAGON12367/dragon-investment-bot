@@ -140,16 +140,16 @@ class ProfitAnalyzer:
         # Determine action - Lower thresholds to show more opportunities, especially for crypto
         asset_type = data.get('asset_type', 'unknown')
         
-        # For crypto, use lower thresholds to show more options
+        # For crypto, use MUCH lower thresholds to show MANY more options
         if asset_type == 'crypto':
-            if profit_score > 0.4:  # Lowered from 0.5 to show more STRONG_BUY
+            if profit_score > 0.3:  # Even lower for STRONG_BUY
                 action = 'STRONG_BUY'
-            elif profit_score > 0.15:  # Lowered from 0.25 to show more BUY options
+            elif profit_score > 0.1:  # Much lower for BUY - show more options
                 action = 'BUY'
-            elif profit_score > 0.05:  # Lowered from 0.1 to show even more options
-                action = 'BUY'  # Still show as BUY for more options
+            elif profit_score > 0.0:  # Show ALL cryptos as BUY (even with 0 score)
+                action = 'BUY'  # Show everything as BUY to maximize options
             else:
-                action = 'HOLD'
+                action = 'BUY'  # Even negative scores show as BUY for crypto
         else:  # Stocks
             if profit_score > 0.5:  # Lowered from 0.6
                 action = 'STRONG_BUY'
