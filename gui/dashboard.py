@@ -520,8 +520,8 @@ class Dashboard:
                     # Separate crypto and stock, prioritize crypto
                     crypto_opps = [o for o in all_opps if o.get('asset_type') == 'crypto']
                     stock_opps = [o for o in all_opps if o.get('asset_type') == 'stock']
-                    # Return up to 50 cryptos + 20 stocks
-                    return (crypto_opps[:50] + stock_opps[:20])
+                    # Return up to 100 cryptos + 30 stocks (increased for more options)
+                    return (crypto_opps[:100] + stock_opps[:30])
                 except asyncio.TimeoutError:
                     self.logger.warning("Profit analyzer timed out - returning empty")
                     return []
@@ -1021,14 +1021,23 @@ class Dashboard:
                 st.success(f"🚀 {total_signals} BUY signals found ({len(all_crypto_buys)} crypto, {len(all_stock_buys)} stock) - BUY NOW!")
                 
                 # Show MANY crypto options (up to 50 cryptos)
+                # ALWAYS ensure we have at least 50 cryptos to display
+                market_data = st.session_state.get('market_data', {})
+                crypto_market_data = {k: v for k, v in market_data.items() if v.get('asset_type') == 'crypto'}
+                
                 # If we don't have enough crypto opportunities, get more from market_data
-                if len(all_crypto_buys) < 30:  # Increased threshold from 10 to 30
+                if len(all_crypto_buys) < 50:  # Always ensure we have 50
                     # Fallback: Get all cryptos from market_data and create basic opportunities
-                    market_data = st.session_state.get('market_data', {})
-                    crypto_market_data = {k: v for k, v in market_data.items() if v.get('asset_type') == 'crypto'}
+                    seen_symbols = {o.get('symbol') for o in all_crypto_buys}
                     
-                    # Get up to 50 cryptos from market data
-                    for symbol, data in list(crypto_market_data.items())[:50]:
+                    # Get up to 50 cryptos from market data (fill to 50 total)
+                    needed = 50 - len(all_crypto_buys)
+                    for symbol, data in list(crypto_market_data.items()):
+                        if len(all_crypto_buys) >= 50:
+                            break
+                        # Skip if already in all_crypto_buys
+                        if symbol in seen_symbols:
+                            continue
                         # Skip if already in all_crypto_buys
                         if any(o.get('symbol') == symbol for o in all_crypto_buys):
                             continue
@@ -1056,11 +1065,14 @@ class Dashboard:
                     all_crypto_buys.sort(key=lambda x: x.get('profit_score', 0), reverse=True)
                 
                 if all_crypto_buys:
-                    display_count = min(len(all_crypto_buys), 50)  # Increased from 20 to 50
+                    # Always show up to 50 cryptos
+                    display_count = min(len(all_crypto_buys), 50)
                     st.markdown(f"### 🚀 Top {display_count} Best Crypto Buys Right Now")
                     # Use compact table format instead of individual containers
                     compact_data = []
-                    for i, opp in enumerate(all_crypto_buys[:50], 1):
+                    # Show exactly 50 cryptos (or all available if less than 50)
+                    crypto_to_show = all_crypto_buys[:50]
+                    for i, opp in enumerate(crypto_to_show, 1):
                         action_badge = "🔥 STRONG BUY" if opp.get('action') == 'STRONG_BUY' else "🟢 BUY"
                         profit_pct = opp.get('profit_potential', 0) * 100
                         confidence = opp.get('profit_score', 0) * 100
