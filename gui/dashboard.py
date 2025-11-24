@@ -52,9 +52,11 @@ st.set_page_config(
 )
 
 # Custom CSS for professional look + Mobile optimization (Enhanced for all devices)
-st.markdown("""
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <style>
+# Use st.components.v1.html for better CSS rendering
+import streamlit.components.v1 as components
+
+css_html = """
+<style>
     /* Global responsive improvements */
     * {
         box-sizing: border-box;
@@ -249,7 +251,10 @@ st.markdown("""
         }
     }
     </style>
-""", unsafe_allow_html=True)
+"""
+
+# Inject CSS using components for better reliability
+components.html(f"<div style='display:none'>{css_html}</div>", height=0)
 
 
 class Dashboard:
