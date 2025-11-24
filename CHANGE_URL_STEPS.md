@@ -1,12 +1,13 @@
 # Quick Steps to Change Your Streamlit URL
 
-## Current URL
-🔗 **https://smart-ai.streamlit.app/** ⭐ (ACTIVE!)
+## Current Active URL
+🔗 **https://ai-investment-bot.streamlit.app/** ⭐ (ACTIVE!)
 
-This is your current active URL - short, professional, and easy to share!
+This is your current active URL - no changes needed!
 
-## Other Short URL Options (if you want to change later):
+## Optional: Short URL Options (if you want to change later):
 - 🔗 **https://ai-bot.streamlit.app/**
+- 🔗 **https://smart-ai.streamlit.app/**
 - 🔗 **https://invest-ai.streamlit.app/**
 - 🔗 **https://trade-ai.streamlit.app/**
 - 🔗 **https://dragon-ai.streamlit.app/** (matches GitHub)
@@ -28,18 +29,18 @@ This is your current active URL - short, professional, and easy to share!
 
 ### 4. Current App Name
 👉 Scroll down to **"App URL"** section
-👉 You should see: `smart-ai.streamlit.app` ⭐
+👉 You should see: `ai-investment-bot.streamlit.app` ⭐
 👉 This is your current active URL!
 
-**To change it (if needed):**
+**To change it (optional - not needed):**
 👉 Click **"Edit"** or the pencil icon ✏️
 👉 Change to a different name if desired
 👉 Click **"Save"**
 
 ### 5. Your Active URL ✅
-**https://smart-ai.streamlit.app/** 🎉
+**https://ai-investment-bot.streamlit.app/** 🎉
 
-Perfect choice - short, professional, and memorable!
+Your URL is active and working perfectly!
 
 ---
 

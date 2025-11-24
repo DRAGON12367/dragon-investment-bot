@@ -89,17 +89,13 @@ Here are **SHORT** professional name suggestions for your investment bot:
 - ✅ GitHub connection stays the same
 - ⚠️ Update any bookmarks or links you've shared
 
-## Recommended Action
+## Current Active URL
 
-**Current URL:** `smart-ai` → **https://smart-ai.streamlit.app/** ⭐
+**Your Active URL:** `ai-investment-bot` → **https://ai-investment-bot.streamlit.app/** ⭐
 
-This is your active URL! Perfect choice - short, professional, and memorable.
+This is your current active URL. No changes needed!
 
-**Alternative Short Options (if you want to change later):**
-- `ai-bot` → **https://ai-bot.streamlit.app/**
-- `invest-ai` → **https://invest-ai.streamlit.app/**
-- `trade-ai` → **https://trade-ai.streamlit.app/**
-- `dragon-ai` → **https://dragon-ai.streamlit.app/** (matches your GitHub)
+**Note:** If you ever want a shorter URL in the future, you can use the options above, but your current URL works perfectly fine.
 
 ---
 
