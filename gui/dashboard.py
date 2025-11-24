@@ -37,17 +37,36 @@ from gui.professional_charts import ProfessionalCharts
 from algorithms.professional_analysis import ProfessionalAnalysis
 
 
-# Page configuration
+# Page configuration - Mobile friendly
 st.set_page_config(
     page_title="AI Investment Bot - Live Dashboard",
     page_icon="📈",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items={
+        'Get Help': None,
+        'Report a bug': None,
+        'About': "AI Investment Bot - Live 24/7 Trading Dashboard"
+    }
 )
 
-# Custom CSS for professional look
+# Custom CSS for professional look + Mobile optimization
 st.markdown("""
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <style>
+    /* Mobile-friendly responsive design */
+    @media screen and (max-width: 768px) {
+        .main-header {
+            font-size: 2rem !important;
+        }
+        .metric-card {
+            padding: 0.5rem !important;
+        }
+        .stDataFrame {
+            font-size: 0.8rem !important;
+        }
+    }
+    
     .main-header {
         font-size: 3rem;
         font-weight: bold;
