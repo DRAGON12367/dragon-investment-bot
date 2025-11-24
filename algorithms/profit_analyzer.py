@@ -142,20 +142,20 @@ class ProfitAnalyzer:
         
         # For crypto, use lower thresholds to show more options
         if asset_type == 'crypto':
-            if profit_score > 0.5:
+            if profit_score > 0.4:  # Lowered from 0.5 to show more STRONG_BUY
                 action = 'STRONG_BUY'
-            elif profit_score > 0.25:  # Lower threshold for crypto
+            elif profit_score > 0.15:  # Lowered from 0.25 to show more BUY options
                 action = 'BUY'
-            elif profit_score > 0.1:  # Show even lower scores for crypto
-                action = 'BUY'  # Still show as BUY
+            elif profit_score > 0.05:  # Lowered from 0.1 to show even more options
+                action = 'BUY'  # Still show as BUY for more options
             else:
                 action = 'HOLD'
         else:  # Stocks
-            if profit_score > 0.6:
+            if profit_score > 0.5:  # Lowered from 0.6
                 action = 'STRONG_BUY'
-            elif profit_score > 0.4:
+            elif profit_score > 0.3:  # Lowered from 0.4
                 action = 'BUY'
-            elif profit_score > 0.2:
+            elif profit_score > 0.15:  # Lowered from 0.2
                 action = 'HOLD'
             else:
                 action = 'AVOID'

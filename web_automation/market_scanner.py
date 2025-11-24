@@ -123,9 +123,10 @@ class MarketScanner:
             Dictionary with all symbols (stocks and crypto) keyed by symbol
         """
         if fast_load:
-            # Fast initial load - only top symbols
-            top_crypto = self.crypto_provider.get_top_symbols(50)
-            top_stocks = self.stock_provider.get_top_symbols(50)
+            # Fast initial load - fetch more symbols for better opportunity detection
+            # Increased to 100 each to ensure enough opportunities are found
+            top_crypto = self.crypto_provider.get_top_symbols(100)
+            top_stocks = self.stock_provider.get_top_symbols(100)
             self.logger.info(f"Fast load mode: fetching top {len(top_crypto)} crypto and top {len(top_stocks)} stocks")
             scan_results = await self.scan_markets(stock_symbols=top_stocks, crypto_symbols=top_crypto)
         else:
