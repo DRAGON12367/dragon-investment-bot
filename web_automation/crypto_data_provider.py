@@ -229,17 +229,21 @@ class CryptoDataProvider:
         cache_key = str(symbols) if symbols else "default"
         
         # Use cached data ONLY if very recent (10 seconds) - always prefer fresh API data
+        cache_age = current_time - self.last_fetch_time if self.last_fetch_time > 0 else 999
         if (cache_key in self.cached_data and 
-            current_time - self.last_fetch_time < self.cache_duration):
-            self.logger.debug(f"Returning very recent cached crypto data (age: {int(current_time - self.last_fetch_time)}s)")
+            cache_age < self.cache_duration):
+            self.logger.debug(f"Using very recent cached crypto data (age: {int(cache_age)}s)")
             return self.cached_data[cache_key]
         
-        # If rate limited recently, return cached data even if stale
+        # If rate limited recently, return cached data even if stale (only for rate limits)
         if (cache_key in self.cached_data and 
             hasattr(self, 'rate_limited_until') and 
             current_time < self.rate_limited_until):
-            self.logger.warning("Rate limited - returning stale cached data")
+            self.logger.warning("Rate limited - returning cached data")
             return self.cached_data[cache_key]
+        
+        # Always fetch fresh data from API (cache expired or doesn't exist)
+        self.logger.info(f"🔄 Fetching fresh crypto data from CoinGecko API (cache age: {int(cache_age)}s)...")
         
         # Ensure session is connected (or requests is ready)
         if self.session is None:
