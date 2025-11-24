@@ -350,7 +350,7 @@ class Dashboard:
             await asyncio.wait_for(self.scanner.connect(), timeout=5.0)
         except asyncio.TimeoutError:
             self.logger.warning("Scanner connection timed out, continuing...")
-            except Exception as e:
+        except Exception as e:
             self.logger.warning(f"Scanner init error (non-critical): {e}")
         
         try:
