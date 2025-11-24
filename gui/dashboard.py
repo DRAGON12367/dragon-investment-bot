@@ -983,7 +983,7 @@ class Dashboard:
                     compact_data = []
                     for i, opp in enumerate(all_crypto_buys[:50], 1):
                         action_badge = "🔥 STRONG BUY" if opp.get('action') == 'STRONG_BUY' else "🟢 BUY"
-                            profit_pct = opp.get('profit_potential', 0) * 100
+                        profit_pct = opp.get('profit_potential', 0) * 100
                         confidence = opp.get('profit_score', 0) * 100
                         current_price = opp.get('current_price', 0)
                         target_price = opp.get('target_price', 0)
@@ -2545,7 +2545,7 @@ def main():
         # Initialize with timeout to prevent hanging
         try:
             loop.run_until_complete(asyncio.wait_for(dashboard.initialize(), timeout=30.0))
-        init_status.text("✅ Dashboard ready! (100%)")
+            init_status.text("✅ Dashboard ready! (100%)")
         except asyncio.TimeoutError:
             init_status.text("⚠️ Dashboard loading (some features may be limited)...")
             print("Warning: Initialization timed out, but dashboard will still work")
