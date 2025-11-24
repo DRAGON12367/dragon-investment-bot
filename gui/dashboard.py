@@ -625,29 +625,29 @@ class Dashboard:
             # Update price history (only for symbols that changed) - skip on fast load for speed
             if not fast_load:
                 # Update price history (only for symbols that changed)
-            current_prices = {symbol: data.get('price', data.get('close', 0)) 
-                            for symbol, data in market_data.items()}
-            
-            updated_count = 0
-            for symbol, price in current_prices.items():
-                if price > 0:  # Only add valid prices
-                    if symbol not in st.session_state.price_history:
-                        st.session_state.price_history[symbol] = []
-                    
-                    # Only add if price changed (avoid duplicate entries)
-                    last_price = (st.session_state.price_history[symbol][-1]['price'] 
-                                if st.session_state.price_history[symbol] else None)
-                    
-                    if last_price != price:
-                        st.session_state.price_history[symbol].append({
-                            'timestamp': datetime.now(),
-                            'price': price,
-                            'volume': market_data[symbol].get('volume', 0)
-                        })
-                        # Keep only last 100 points
-                        if len(st.session_state.price_history[symbol]) > 100:
-                            st.session_state.price_history[symbol] = st.session_state.price_history[symbol][-100:]
-                        updated_count += 1
+                current_prices = {symbol: data.get('price', data.get('close', 0)) 
+                                for symbol, data in market_data.items()}
+                
+                updated_count = 0
+                for symbol, price in current_prices.items():
+                    if price > 0:  # Only add valid prices
+                        if symbol not in st.session_state.price_history:
+                            st.session_state.price_history[symbol] = []
+                        
+                        # Only add if price changed (avoid duplicate entries)
+                        last_price = (st.session_state.price_history[symbol][-1]['price'] 
+                                    if st.session_state.price_history[symbol] else None)
+                        
+                        if last_price != price:
+                            st.session_state.price_history[symbol].append({
+                                'timestamp': datetime.now(),
+                                'price': price,
+                                'volume': market_data[symbol].get('volume', 0)
+                            })
+                            # Keep only last 100 points
+                            if len(st.session_state.price_history[symbol]) > 100:
+                                st.session_state.price_history[symbol] = st.session_state.price_history[symbol][-100:]
+                            updated_count += 1
             
             # Complete (instant, no progress callbacks)
             
