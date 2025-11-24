@@ -980,16 +980,34 @@ class Dashboard:
                     }
                     price = placeholder_prices.get(symbol, 1.0)
                 
-                # Calculate varied score based on position in top 50 list
-                # Higher ranked cryptos get better scores (0.35 to 0.65)
+                # REALISTIC SCORE for hardcoded fallback cryptos
+                # Use market cap rank and typical characteristics
                 position_in_list = top_50_crypto_symbols.index(symbol) if symbol in top_50_crypto_symbols else 25
-                rank_score = 0.65 - (position_in_list / 50.0 * 0.3)  # 0.65 for #1, 0.35 for #50
                 
-                # Add some randomness based on symbol hash for variation
+                # Base score from market position (top cryptos = higher confidence)
+                # Top 10: 55-65%, Top 20: 45-55%, Top 30: 35-45%, Rest: 25-35%
+                if position_in_list < 10:
+                    base_score = 0.60 - (position_in_list / 10.0 * 0.10)  # 60% to 50%
+                elif position_in_list < 20:
+                    base_score = 0.50 - ((position_in_list - 10) / 10.0 * 0.10)  # 50% to 40%
+                elif position_in_list < 30:
+                    base_score = 0.40 - ((position_in_list - 20) / 10.0 * 0.10)  # 40% to 30%
+                else:
+                    base_score = 0.30 - ((position_in_list - 30) / 20.0 * 0.10)  # 30% to 25%
+                
+                # Add realistic variation based on symbol characteristics
+                # Major cryptos (BTC, ETH) get stability bonus
+                major_cryptos = ['BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'XRP', 'USDC']
+                if symbol in major_cryptos:
+                    stability_bonus = 0.08  # More stable = higher confidence
+                else:
+                    stability_bonus = 0.03  # Altcoins = more volatile
+                
+                # Use symbol hash for consistent but varied scoring
                 symbol_hash = int(hashlib.md5(symbol.encode()).hexdigest()[:2], 16)
-                variation = (symbol_hash % 20) / 100.0  # 0 to 0.2 variation
+                variation = (symbol_hash % 15) / 100.0  # 0 to 0.15 variation
                 
-                calculated_score = min(0.75, max(0.25, rank_score + variation))
+                calculated_score = min(0.80, max(0.20, base_score + stability_bonus + variation))
                 
                 all_crypto_buys.append({
                     'symbol': symbol,
@@ -1066,27 +1084,75 @@ class Dashboard:
                     
                     price = data.get('price', 0)
                     if price > 0:
-                        # Calculate a more sophisticated score
+                        # REALISTIC AI CONFIDENCE CALCULATION
                         change_24h = data.get('change_percent', 0) or 0
                         volume = data.get('volume', 0) or 0
                         high_24h = data.get('high', price)
                         low_24h = data.get('low', price)
+                        market_cap = data.get('market_cap', 0) or 0
                         
-                        # Base score from 24h change (0.15 to 0.45)
-                        change_score = min(0.45, max(0.15, abs(change_24h) / 100.0 + 0.2)) if change_24h != 0 else 0.3
+                        # 1. Momentum Score (0-30%) - Based on price change and position
+                        price_position = (price - low_24h) / (high_24h - low_24h) if high_24h != low_24h else 0.5
+                        momentum = change_24h / 100.0  # Normalize to -1 to 1
+                        momentum_score = min(0.30, max(0.05, (abs(momentum) * 0.25 + price_position * 0.05)))
                         
-                        # Volume bonus (0 to 0.1)
-                        volume_bonus = min(0.1, volume / 1e9 * 0.1) if volume > 0 else 0.05
+                        # 2. Volume/Liquidity Score (0-20%) - Higher volume = more confidence
+                        # Normalize by market cap for realistic scoring
+                        if market_cap > 0:
+                            volume_ratio = volume / market_cap if market_cap > 0 else 0
+                            volume_score = min(0.20, max(0.05, volume_ratio * 100))
+                        else:
+                            # Fallback: normalize by typical crypto volumes
+                            volume_score = min(0.20, max(0.05, volume / 1e9 * 0.15))
                         
-                        # Volatility bonus (0 to 0.1)
+                        # 3. Volatility/Risk Score (0-15%) - Moderate volatility is good
                         volatility = abs(high_24h - low_24h) / price if price > 0 and high_24h != low_24h else 0
-                        volatility_bonus = min(0.1, volatility * 2)
+                        # Too high volatility = risky, too low = no opportunity
+                        if 0.02 <= volatility <= 0.10:  # Sweet spot: 2-10% daily volatility
+                            volatility_score = 0.15
+                        elif volatility < 0.02:
+                            volatility_score = 0.10  # Low volatility = less opportunity
+                        else:
+                            volatility_score = max(0.05, 0.15 - (volatility - 0.10) * 0.5)  # Penalize high volatility
                         
-                        # Position bonus (earlier = better, 0 to 0.1)
-                        position_bonus = max(0, (50 - len(all_crypto_buys)) / 500.0)
+                        # 4. Market Position Score (0-10%) - Top cryptos get slight boost
+                        # Use market cap rank if available
+                        if market_cap > 1e9:  # Top 100 by market cap
+                            market_position_score = 0.10
+                        elif market_cap > 1e8:  # Top 500
+                            market_position_score = 0.07
+                        else:
+                            market_position_score = 0.05
                         
-                        # Combine scores (total: 0.2 to 0.75)
-                        calculated_score = min(0.75, change_score + volume_bonus + volatility_bonus + position_bonus)
+                        # 5. Trend Strength (0-15%) - Based on price position in 24h range
+                        # Near high = strong uptrend, near low = potential reversal
+                        if price_position > 0.7:  # Near 24h high - strong momentum
+                            trend_score = 0.15
+                        elif price_position < 0.3:  # Near 24h low - potential oversold
+                            trend_score = 0.12  # Good for mean reversion
+                        else:
+                            trend_score = 0.08  # Neutral
+                        
+                        # 6. Risk Adjustment (-5% to +5%) - Penalize extreme moves
+                        if abs(change_24h) > 20:  # Extreme move = risky
+                            risk_adjustment = -0.05
+                        elif abs(change_24h) < 0.5:  # Very low movement = low opportunity
+                            risk_adjustment = -0.03
+                        else:
+                            risk_adjustment = 0.02  # Normal movement = slight boost
+                        
+                        # Combine all scores (realistic range: 15% to 85%)
+                        calculated_score = (
+                            momentum_score +
+                            volume_score +
+                            volatility_score +
+                            market_position_score +
+                            trend_score +
+                            risk_adjustment
+                        )
+                        
+                        # Clamp to realistic range (15% to 85%)
+                        calculated_score = min(0.85, max(0.15, calculated_score))
                         
                         all_crypto_buys.append({
                             'symbol': symbol,
