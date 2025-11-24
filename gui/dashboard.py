@@ -392,46 +392,20 @@ class Dashboard:
                 except:
                     pass  # Continue even if connection fails
             
-            # Fast initial load strategy: Use cache immediately, refresh in background
+            # FORCE FRESH LIVE DATA ON EVERY VISIT - No cache, always fetch from APIs
             cache_key = 'market_data_cache'
             cache_time_key = 'market_data_cache_time'
-            cache_timeout = 300  # 5 minutes - use cache aggressively for fast load
             
-            # Check if we have cached data
-            cache_has_data = (cache_key in st.session_state and 
-                            len(st.session_state.get(cache_key, {})) > 0)
-            cache_not_expired = (cache_time_key in st.session_state and
-                               (datetime.now() - st.session_state[cache_time_key]).total_seconds() < cache_timeout)
+            # ALWAYS fetch fresh data from live APIs - bypass cache completely
+            self.logger.info("🔄 FORCING fresh live data fetch from APIs (bypassing cache)...")
             
-            # Force fresh fetch if session state is empty (first load or after error)
-            force_fresh_fetch = ('market_data' not in st.session_state or 
-                               len(st.session_state.get('market_data', {})) == 0)
-            
-            # FAST LOAD: Use cached data immediately if available (for instant page load)
-            if cache_has_data and cache_not_expired:
-                # Use cached data instantly for fast page load
-                market_data = st.session_state[cache_key]
-                self.logger.info(f"⚡ Fast load: Using cached data ({len(market_data)} assets)")
-                
-                # Refresh in background if cache is older than 2 minutes (non-blocking)
-                cache_age = (datetime.now() - st.session_state[cache_time_key]).total_seconds()
-                if cache_age > 120:  # Cache older than 2 minutes
-                    # Trigger background refresh (non-blocking) - don't await
-                    try:
-                        # Create background task without blocking
-                        loop = asyncio.get_event_loop()
-                        if loop.is_running():
-                            asyncio.create_task(self._refresh_data_in_background())
-                    except:
-                        pass  # Background refresh failed, continue with cached data
-            else:
-                # No cache or expired - fetch fresh data with fast_load for quick response
-                try:
-                    # Use fast_load for quick initial response, shorter timeout
-                    market_data = await asyncio.wait_for(
-                        self.broker_client.get_all_market_data(fast_load=True),  # Fast load for quick response
-                        timeout=10.0  # 10 seconds - balance between speed and data completeness
-                    )
+            # Skip cache check - always fetch fresh
+            try:
+                # ALWAYS fetch fresh data from live APIs - full load for complete real data
+                market_data = await asyncio.wait_for(
+                    self.broker_client.get_all_market_data(fast_load=False),  # Full load for complete live data
+                    timeout=30.0  # 30 seconds - enough time for real API calls
+                )
                     self.logger.info(f"Fetched live market data: {len(market_data) if market_data else 0} assets")
                     
                     # Always store what we got (even if empty) to avoid repeated failed fetches
