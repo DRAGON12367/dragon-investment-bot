@@ -242,16 +242,22 @@ class Dashboard:
             cache_timeout = 1  # seconds - live updates
             
             # For fast_load, use longer cache timeout (5 minutes) to avoid refetching
+            # BUT only if we actually have cached data - don't use empty cache
             if fast_load:
                 cache_timeout = 300  # 5 minutes for initial fast load
             
-            if (cache_key in st.session_state and 
-                cache_time_key in st.session_state and
-                (datetime.now() - st.session_state[cache_time_key]).total_seconds() < cache_timeout):
+            # Only use cache if it exists AND has data AND is not expired
+            cache_has_data = (cache_key in st.session_state and 
+                            len(st.session_state.get(cache_key, {})) > 0)
+            cache_not_expired = (cache_time_key in st.session_state and
+                               (datetime.now() - st.session_state[cache_time_key]).total_seconds() < cache_timeout)
+            
+            if cache_has_data and cache_not_expired:
                 # Use cached data for faster updates
                 if progress_callback:
                     progress_callback(20, "Using cached market data...")
                 market_data = st.session_state[cache_key]
+                self.logger.info(f"Using cached data: {len(market_data)} assets")
             else:
                 # Scan markets (only if cache expired)
                 if progress_callback:
@@ -261,29 +267,37 @@ class Dashboard:
                         progress_callback(15, "Fetching market data...")
                 try:
                     market_data = await self.broker_client.get_all_market_data(fast_load=fast_load)
-                    # Only update cache if we got data
-                    if market_data and len(market_data) > 0:
+                    self.logger.info(f"Fetched market data: {len(market_data) if market_data else 0} assets")
+                    
+                    # Always store what we got (even if empty) to avoid repeated failed fetches
+                    if market_data is None:
+                        market_data = {}
+                    
+                    # Update cache if we got data
+                    if len(market_data) > 0:
                         st.session_state[cache_key] = market_data
                         st.session_state[cache_time_key] = datetime.now()
                         if progress_callback:
                             progress_callback(25, f"Loaded {len(market_data)} assets")
+                        self.logger.info(f"✅ Successfully loaded {len(market_data)} assets")
                     else:
-                        # No new data - use cached if available
-                        if cache_key in st.session_state and len(st.session_state[cache_key]) > 0:
+                        # No new data - try cached or existing session data
+                        if cache_has_data:
                             market_data = st.session_state[cache_key]
                             if progress_callback:
                                 progress_callback(25, f"Using cached data: {len(market_data)} assets")
+                            self.logger.warning(f"Fetch returned empty, using cached data: {len(market_data)} assets")
+                        elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
+                            market_data = st.session_state.market_data
+                            if progress_callback:
+                                progress_callback(25, f"Using session data: {len(market_data)} assets")
+                            self.logger.warning(f"Fetch returned empty, using session data: {len(market_data)} assets")
                         else:
-                            # No data at all - try to use existing session state
-                            if 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
-                                market_data = st.session_state.market_data
-                                if progress_callback:
-                                    progress_callback(25, f"Using session data: {len(market_data)} assets")
-                            else:
-                                # No data at all - return empty
-                                market_data = {}
-                                if progress_callback:
-                                    progress_callback(25, "No market data available - API may be rate limited")
+                            # No data at all - log error but continue
+                            market_data = {}
+                            if progress_callback:
+                                progress_callback(25, "⚠️ No market data - API may be rate limited")
+                            self.logger.error("❌ No market data available - API may be rate limited or offline")
                 except Exception as e:
                     import traceback
                     self.logger.error(f"Error fetching market data: {e}")
@@ -309,17 +323,12 @@ class Dashboard:
                     market_data = st.session_state.market_data
                     self.logger.info(f"Using existing session data: {len(market_data)} assets")
                 else:
-                    # No data available - initialize empty state
-                    if 'market_data' not in st.session_state or not st.session_state.market_data:
-                        st.session_state.market_data = {}
-                        st.session_state.signals = []
-                        st.session_state.opportunities = []
-                        st.session_state.sell_signals = []
-                        st.session_state.last_update = datetime.now()
+                    # No data available - initialize empty state but still set last_update
+                    market_data = {}
+                    self.logger.warning("⚠️ No market data available - initializing empty state")
                     if progress_callback:
-                        progress_callback(100, "No market data available - will retry on next refresh")
-                    # Don't exit - continue with empty data to show user the issue
-                    market_data = st.session_state.get('market_data', {})
+                        progress_callback(100, "⚠️ No market data - will retry on next refresh")
+                    # Continue anyway - we'll set empty state below
             
             # Debug: Log what we got
             stocks_count = len([s for s, d in market_data.items() if d.get('asset_type') == 'stock'])
@@ -404,15 +413,18 @@ class Dashboard:
             if progress_callback:
                 progress_callback(80, "Updating session state...")
             
-            # Update session state
-            st.session_state.market_data = market_data
-            st.session_state.signals = signals
-            st.session_state.opportunities = top_opportunities
-            st.session_state.sell_signals = sell_signals
-            st.session_state.portfolio = portfolio
-            st.session_state.best_buy_predictions = best_buy_predictions
-            st.session_state.crash_alerts = crash_alerts
-            st.session_state.last_update = datetime.now()
+            # Update session state - ALWAYS update even if data is empty
+            st.session_state.market_data = market_data if market_data else {}
+            st.session_state.signals = signals if signals else []
+            st.session_state.opportunities = top_opportunities if top_opportunities else []
+            st.session_state.sell_signals = sell_signals if sell_signals else []
+            st.session_state.portfolio = portfolio if portfolio else {}
+            st.session_state.best_buy_predictions = best_buy_predictions if best_buy_predictions else []
+            st.session_state.crash_alerts = crash_alerts if crash_alerts else []
+            st.session_state.last_update = datetime.now()  # Always update timestamp
+            
+            # Log final state
+            self.logger.info(f"✅ Session state updated: {len(market_data)} assets, {len(top_opportunities)} opportunities, {len(signals)} signals")
             
             if progress_callback:
                 progress_callback(85, "Updating price history...")

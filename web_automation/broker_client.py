@@ -27,15 +27,25 @@ class BrokerClient(MarketScanner):
         Get all market data with improved error handling.
         
         Args:
-            fast_load: If True, only fetch top 50 cryptos and top 50 stocks for faster initial load
+            fast_load: If True, only fetch top 100 cryptos and top 100 stocks for faster initial load
         
         Returns:
             Dictionary with all market data
         """
         try:
-            return await super().get_all_market_data(fast_load=fast_load)
+            result = await super().get_all_market_data(fast_load=fast_load)
+            if result is None:
+                self.logger.warning("get_all_market_data returned None, returning empty dict")
+                return {}
+            if not isinstance(result, dict):
+                self.logger.warning(f"get_all_market_data returned {type(result)}, returning empty dict")
+                return {}
+            self.logger.info(f"✅ Broker client fetched {len(result)} assets")
+            return result
         except Exception as e:
             self.logger.error(f"Error getting market data: {e}", exc_info=True)
+            import traceback
+            traceback.print_exc()
             # Return empty dict instead of crashing
             return {}
     
