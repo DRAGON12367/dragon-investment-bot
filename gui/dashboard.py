@@ -519,19 +519,19 @@ class Dashboard:
                             asyncio.to_thread(self.profit_analyzer.analyze_opportunities, market_data),
                             timeout=2.0  # 2 second timeout - instant fallback
                         )
-                    # Get many more opportunities - prioritize crypto
-                    all_opps = self.profit_analyzer.get_top_opportunities(opps, limit=100)  # Get up to 100
-                    # Separate crypto and stock, prioritize crypto
-                    crypto_opps = [o for o in all_opps if o.get('asset_type') == 'crypto']
-                    stock_opps = [o for o in all_opps if o.get('asset_type') == 'stock']
-                    # Return up to 100 cryptos + 30 stocks (increased for more options)
-                    return (crypto_opps[:100] + stock_opps[:30])
-                except asyncio.TimeoutError:
-                    self.logger.warning("Profit analyzer timed out - returning empty")
-                    return []
-                except Exception as e:
-                    print(f"Error in profit analyzer: {e}")
-                    return []
+                        # Get many more opportunities - prioritize crypto
+                        all_opps = self.profit_analyzer.get_top_opportunities(opps, limit=100)  # Get up to 100
+                        # Separate crypto and stock, prioritize crypto
+                        crypto_opps = [o for o in all_opps if o.get('asset_type') == 'crypto']
+                        stock_opps = [o for o in all_opps if o.get('asset_type') == 'stock']
+                        # Return up to 100 cryptos + 30 stocks (increased for more options)
+                        return (crypto_opps[:100] + stock_opps[:30])
+                    except asyncio.TimeoutError:
+                        self.logger.warning("Profit analyzer timed out - returning empty")
+                        return []
+                    except Exception as e:
+                        print(f"Error in profit analyzer: {e}")
+                        return []
                 
                 async def predict_best_buys():
                     """Use insane prediction algorithms to find best buys."""
