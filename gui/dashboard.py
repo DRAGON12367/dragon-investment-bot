@@ -1215,7 +1215,6 @@ class Dashboard:
                         rank_score = 0.65 - (position_in_list / 50.0 * 0.3)  # 0.65 for #1, 0.35 for #50
                         
                         # Add some randomness based on symbol hash for variation
-                        import hashlib
                         symbol_hash = int(hashlib.md5(symbol.encode()).hexdigest()[:2], 16)
                         variation = (symbol_hash % 20) / 100.0  # 0 to 0.2 variation
                         
