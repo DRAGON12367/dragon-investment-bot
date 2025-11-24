@@ -52,10 +52,7 @@ st.set_page_config(
 )
 
 # Custom CSS for professional look + Mobile optimization (Enhanced for all devices)
-# Use st.components.v1.html for better CSS rendering
-import streamlit.components.v1 as components
-
-css_html = """
+st.markdown("""
 <style>
     /* Global responsive improvements */
     * {
@@ -251,10 +248,7 @@ css_html = """
         }
     }
     </style>
-"""
-
-# Inject CSS using components for better reliability
-components.html(f"<div style='display:none'>{css_html}</div>", height=0)
+""", unsafe_allow_html=True)
 
 
 class Dashboard:
