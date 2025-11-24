@@ -104,7 +104,89 @@ class StockDataProvider:
             "IONQ", "QUBT", "QBTS", "HON", "IBM", "GOOGL", "MSFT",
             # Metaverse & VR
             "META", "RBLX", "U", "NVDA", "AAPL", "MSFT", "GOOGL", "SONY",
-            # Total: 300+ stocks across all sectors
+            
+            # Additional Large Cap Stocks
+            "BRK.B", "JPM", "V", "MA", "WMT", "HD", "PG", "KO", "PEP", "DIS",
+            "NFLX", "CMCSA", "T", "VZ", "XOM", "CVX", "JNJ", "UNH", "ABBV",
+            
+            # Mid-Cap Growth Stocks
+            "SQ", "ROKU", "ZM", "DOCU", "FROG", "BILL", "ESTC", "APPN",
+            "VEEV", "WK", "NCNO", "FOUR", "NU", "LC", "PAG", "FISV", "FIS",
+            "GPN", "WU", "ABG", "CARG", "VRM", "CVNA", "W", "SHOP", "ETSY",
+            
+            # International Stocks (ADRs)
+            "ASML", "TSM", "NVO", "UL", "BP", "SHEL", "GSK", "AZN", "DEO",
+            "NVS", "RHHBY", "TM", "HMC", "SONY", "MUFG", "SMFG", "MFG",
+            
+            # Small Cap & Growth
+            "UPST", "SOFI", "AFRM", "HOOD", "COIN", "RIVN", "LCID", "NIO",
+            "XPEV", "LI", "BZ", "SPCE", "RKLB", "IRDM", "VSAT", "RDW",
+            
+            # Dividend Stocks
+            "T", "VZ", "XOM", "CVX", "JNJ", "KO", "PEP", "PG", "WMT", "HD",
+            "MCD", "SBUX", "NKE", "LOW", "COST", "TGT", "TJX",
+            
+            # Growth Tech
+            "SNOW", "DDOG", "MDB", "NET", "CRWD", "ZS", "PANW", "FTNT",
+            "OKTA", "S", "TEAM", "NOW", "CRM", "DOCN", "U", "PLTR",
+            
+            # Healthcare & Biotech
+            "GILD", "REGN", "VRTX", "BIIB", "ILMN", "MRNA", "BNTX", "NVAX",
+            "TDOC", "OMCL", "RGNX", "FOLD", "ARWR", "IONS", "ALKS", "SGMO",
+            "BMRN", "FATE", "BEAM", "CRISPR", "EDIT", "NTLA", "VERV",
+            
+            # Energy & Commodities
+            "SLB", "HAL", "OXY", "EOG", "DVN", "MRO", "APA", "FANG",
+            "OVV", "CTRA", "MTDR", "SM", "AR", "EQT", "RRC", "SWN",
+            
+            # Industrial & Manufacturing
+            "DE", "CAT", "EMR", "ETN", "ITW", "PH", "ROK", "CMI",
+            "PCAR", "WWD", "FTV", "GGG", "AOS", "AME", "DOV",
+            
+            # Consumer Discretionary
+            "NKE", "LULU", "DKS", "BBY", "GME", "AMC", "BBBY", "WEN",
+            "YUM", "DPZ", "CMG", "SBUX", "MCD", "DIN", "BLMN", "CAKE",
+            
+            # Real Estate & REITs
+            "AMT", "PLD", "EQIX", "PSA", "WELL", "VICI", "SPG", "O",
+            "DLR", "EXPI", "Z", "OPEN", "COMP", "HOUS", "RKT", "UWMC",
+            "RDFN", "REDF", "REAX", "REMAX",
+            
+            # Financial Services
+            "COF", "USB", "PNC", "TFC", "BK", "STT", "FITB", "KEY",
+            "HBAN", "CFG", "MTB", "ZION", "RF", "CMA", "WTFC", "ONB",
+            "FNB", "HOMB", "UMBF", "TCBI", "WAFD",
+            
+            # Materials & Chemicals
+            "LIN", "APD", "ECL", "SHW", "PPG", "DD", "DOW", "CE",
+            "FMC", "NEM", "FCX", "AA", "CLF", "STLD", "NUE", "CMC",
+            "VALE", "RIO", "BHP", "SCCO", "TECK", "LAC", "ALB", "SQM",
+            
+            # Utilities
+            "NEE", "DUK", "SO", "AEP", "SRE", "EXC", "XEL", "ES", "ETR",
+            "PEG", "ED", "EIX", "FE", "AEE", "CMS", "CNP", "LNT",
+            
+            # Communication & Media
+            "CHTR", "ROKU", "SPOT", "PINS", "SNAP", "TWTR", "PARA",
+            "FOX", "FOXA", "NWSA", "NWS", "LSXMA", "LSXMB", "LSXMK",
+            
+            # Transportation & Logistics
+            "UPS", "FDX", "JBHT", "CHRW", "XPO", "KNX", "ODFL", "ARCB",
+            "HUBG", "WERN", "RLGT", "MRTN", "PTSI",
+            
+            # Aerospace & Defense
+            "LMT", "NOC", "GD", "RTX", "BA", "HWM", "TXT", "HXL",
+            "HEI", "CW", "AIR", "SPR", "HII", "LDOS",
+            
+            # Food & Beverage
+            "MDLZ", "GIS", "K", "CPB", "SJM", "HSY", "CAG", "HRL",
+            "TSN", "BG", "ADM", "INGR", "FLO", "LW",
+            
+            # Retail & E-commerce
+            "TGT", "WMT", "COST", "HD", "LOW", "TJX", "ROST", "BBY",
+            "DKS", "ANF", "AEO", "GPS", "URBN", "DKS", "HIBB",
+            
+            # Total: 500+ stocks across all sectors
         ]
         
     async def get_market_data(self, symbols: Optional[List[str]] = None) -> Dict[str, Any]:

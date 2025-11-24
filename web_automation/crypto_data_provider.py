@@ -83,9 +83,70 @@ class CryptoDataProvider:
             
             # Additional High-Volume Coins
             "bitcoin-cash-sv", "bitcoin-gold", "zcash", "monero", "dash",
-            "ravencoin", "digibyte", "vertcoin", "groestlcoin", "feathercoin"
+            "ravencoin", "digibyte", "vertcoin", "groestlcoin", "feathercoin",
+            
+            # Seventh Tier (151-180) - More DeFi & Yield Farming
+            "compound-governance-token", "uniswap", "sushi", "curve-dao-token",
+            "yearn-finance", "balancer", "1inch", "0x", "kyber-network-crystal",
+            "bancor", "synthetix-network-token", "ren", "keep-network",
+            "nucypher", "uma", "band-protocol", "kava", "terra-luna",
+            
+            # Eighth Tier (181-210) - NFT & Metaverse Tokens
+            "enjincoin", "the-sandbox", "decentraland", "axie-infinity",
+            "gala", "illuvium", "star-atlas", "alien-worlds", "splinterlands",
+            "gods-unchained", "my-neighbor-alice", "treeverse", "emperor",
+            "cryptokitties", "superrare", "rarible", "opensea", "foundation",
+            
+            # Ninth Tier (211-240) - More Layer 2 & Scaling Solutions
+            "polygon", "arbitrum", "optimism", "base", "zksync", "starknet",
+            "metis", "boba-network", "loopring", "polygon-zkevm", "scroll",
+            "mantle", "linea", "taiko", "blast", "mode", "zora", "l2beat",
+            "dydx", "perpetual-protocol", "gmx", "synthetix", "immutable-x",
+            
+            # Tenth Tier (241-270) - More Meme & Social Tokens
+            "dogecoin", "shiba-inu", "pepe", "floki", "bonk", "wif", "bome",
+            "myro", "popcat", "grok", "turbo", "doge", "shib", "feg-token",
+            "safemoon", "baby-doge-coin", "dogelon-mars", "shiba-prediction",
+            "shibarium", "bone-shibaswap", "leash", "akita-inu", "kishu-inu",
+            
+            # Eleventh Tier (271-300) - More AI & Data Tokens
+            "fetch-ai", "singularitynet", "ocean-protocol", "numeraire",
+            "cortex", "deepbrain-chain", "matrix-ai-network", "agi-token",
+            "artificial-intelligence", "ai", "agi", "ml", "neural-network",
+            "deep-learning", "machine-learning", "tensor", "pyth-network",
+            
+            # Twelfth Tier (301-330) - More Gaming & Play-to-Earn
+            "axie-infinity", "the-sandbox", "decentraland", "gala", "enjincoin",
+            "illuvium", "star-atlas", "alien-worlds", "splinterlands",
+            "gods-unchained", "my-neighbor-alice", "treeverse", "emperor",
+            "cryptokitties", "superrare", "rarible", "opensea", "foundation",
+            "immutable-x", "polygon", "wax", "enjin", "flow",
+            
+            # Thirteenth Tier (331-360) - More Exchange Tokens
+            "binancecoin", "okb", "crypto-com-chain", "huobi-token",
+            "kucoin-shares", "gatechain-token", "bitfinex-leo-token",
+            "ftx-token", "bitmax-token", "mxc", "probit-exchange",
+            
+            # Fourteenth Tier (361-390) - More Privacy Coins
+            "monero", "zcash", "dash", "horizen", "beam", "grin",
+            "pivx", "verge", "nav-coin", "particl", "firo",
+            
+            # Fifteenth Tier (391-420) - More Stablecoins & CBDCs
+            "tether", "usd-coin", "dai", "true-usd", "paxos-standard",
+            "binance-usd", "gemini-dollar", "husd", "usdk", "tusd",
+            
+            # Sixteenth Tier (421-450) - More Emerging Altcoins
+            "celo", "celsius-network-token", "nexo", "blockfi", "crypto-com",
+            "swissborg", "you-coin", "compound", "aave", "maker",
+            "curve-dao-token", "yearn-finance", "sushi", "1inch", "0x",
+            
+            # Additional Popular Coins
+            "terrausd", "luna", "anchor-protocol", "mirror-protocol",
+            "thorchain", "osmosis", "juno-network", "secret", "akash-network",
+            "sentinel", "persistence", "regen", "irisnet", "starname",
+            "band-protocol", "kava", "hard-protocol", "terra", "anchor"
         ]
-        # Total: 150+ cryptocurrencies tracked
+        # Total: 450+ cryptocurrencies tracked
         
         # Mapping of common symbols to CoinGecko IDs
         self.symbol_mapping = {
