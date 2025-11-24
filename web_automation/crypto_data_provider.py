@@ -26,10 +26,10 @@ class CryptoDataProvider:
         # Rate limiting and caching - INCREASED to reduce API calls
         self.last_fetch_time = 0
         self.cached_data = {}
-        self.cache_duration = 300  # Cache for 5 minutes to reduce API calls (was 60 seconds)
-        self.rate_limit_delay = 2  # Delay between requests in seconds
+        self.cache_duration = 600  # Cache for 10 minutes to reduce API calls and avoid rate limits
+        self.rate_limit_delay = 3  # Delay between requests in seconds (increased for rate limit)
         self.max_retries = 3
-        self.retry_delays = [5, 15, 30]  # Exponential backoff delays
+        self.retry_delays = [10, 30, 60]  # Longer exponential backoff delays for rate limits
         
         # Detect if we're running in Streamlit
         import sys
