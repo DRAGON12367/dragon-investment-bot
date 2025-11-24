@@ -1,10 +1,17 @@
 # Quick Steps to Change Your Streamlit URL
 
 ## Current URL
-🔗 https://ai-investment-bot.streamlit.app/
+🔗 https://ai-investment-bot.streamlit.app/ (TOO LONG!)
 
-## New URL (Recommended)
-🔗 https://dragon-investment-bot.streamlit.app/
+## New URL Options (SHORT!)
+Choose one of these shorter URLs:
+
+### ⭐ Shortest Options:
+- 🔗 **https://ai-bot.streamlit.app/** (BEST - shortest!)
+- 🔗 **https://invest-ai.streamlit.app/**
+- 🔗 **https://trade-ai.streamlit.app/**
+- 🔗 **https://smart-ai.streamlit.app/**
+- 🔗 **https://dragon-ai.streamlit.app/** (matches GitHub)
 
 ## Step-by-Step Instructions
 
@@ -25,12 +32,21 @@
 👉 Scroll down to **"App URL"** section
 👉 You'll see: `ai-investment-bot.streamlit.app`
 👉 Click **"Edit"** or the pencil icon ✏️
-👉 Change to: `dragon-investment-bot`
+👉 Change to one of these SHORT names:
+   - `ai-bot` ⭐ (SHORTEST - recommended!)
+   - `invest-ai`
+   - `trade-ai`
+   - `smart-ai`
+   - `dragon-ai`
 👉 Click **"Save"**
 
+**Note:** If your first choice is taken, try the next one!
+
 ### 5. Done! ✅
-Your new URL will be:
-**https://dragon-investment-bot.streamlit.app/**
+Your new SHORT URL will be:
+**https://[your-choice].streamlit.app/**
+
+Example: **https://ai-bot.streamlit.app/** 🎉
 
 ---
 
