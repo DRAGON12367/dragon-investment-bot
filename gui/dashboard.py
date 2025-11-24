@@ -406,19 +406,19 @@ class Dashboard:
                     self.broker_client.get_all_market_data(fast_load=False),  # Full load for complete live data
                     timeout=30.0  # 30 seconds - enough time for real API calls
                 )
-                    self.logger.info(f"Fetched live market data: {len(market_data) if market_data else 0} assets")
-                    
-                    # Always store what we got (even if empty) to avoid repeated failed fetches
-                    if market_data is None:
-                        market_data = {}
-                    
-                    # Update cache with fresh live data
-                    if len(market_data) > 0:
-                        st.session_state[cache_key] = market_data
-                        st.session_state[cache_time_key] = datetime.now()
-                        self.logger.info(f"✅ Successfully loaded {len(market_data)} live assets from APIs")
-                    else:
-                        self.logger.warning(f"⚠️ API returned empty data - may be rate limited")
+                self.logger.info(f"Fetched live market data: {len(market_data) if market_data else 0} assets")
+                
+                # Always store what we got (even if empty) to avoid repeated failed fetches
+                if market_data is None:
+                    market_data = {}
+                
+                # Update cache with fresh live data
+                if len(market_data) > 0:
+                    st.session_state[cache_key] = market_data
+                    st.session_state[cache_time_key] = datetime.now()
+                    self.logger.info(f"✅ Successfully loaded {len(market_data)} live assets from APIs")
+                else:
+                    self.logger.warning(f"⚠️ API returned empty data - may be rate limited")
                 except asyncio.TimeoutError:
                     self.logger.warning("⚠️ Market data fetch timed out - trying cached data as fallback")
                     # Only use cache as last resort if API completely fails
