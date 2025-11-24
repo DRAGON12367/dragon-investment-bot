@@ -5,7 +5,7 @@ Meta-Learning and Advanced ML Models - 10x Upgrade
 import logging
 import pickle
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, TYPE_CHECKING
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import (
@@ -354,7 +354,7 @@ class MetaLearningModels:
         )
     
     # Deep Learning Model Creators
-    def _create_deep_lstm(self, seq_len=60, features=50) -> Model:
+    def _create_deep_lstm(self, seq_len=60, features=50) -> Any:
         """Create deep LSTM."""
         model = Sequential([
             LSTM(256, return_sequences=True, input_shape=(seq_len, features)),
@@ -370,7 +370,7 @@ class MetaLearningModels:
         model.compile(optimizer=Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_deep_gru(self, seq_len=60, features=50) -> Model:
+    def _create_deep_gru(self, seq_len=60, features=50) -> Any:
         """Create deep GRU."""
         model = Sequential([
             GRU(256, return_sequences=True, input_shape=(seq_len, features)),
@@ -385,7 +385,7 @@ class MetaLearningModels:
         model.compile(optimizer=Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_cnn_1d(self, seq_len=60, features=50) -> Model:
+    def _create_cnn_1d(self, seq_len=60, features=50) -> Any:
         """Create 1D CNN."""
         model = Sequential([
             Conv1D(128, 3, activation='relu', input_shape=(seq_len, features)),
@@ -402,7 +402,7 @@ class MetaLearningModels:
         model.compile(optimizer=Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_cnn_2d(self, seq_len=60, features=50) -> Model:
+    def _create_cnn_2d(self, seq_len=60, features=50) -> Any:
         """Create 2D CNN."""
         model = Sequential([
             Reshape((seq_len, features, 1), input_shape=(seq_len, features)),
@@ -417,7 +417,7 @@ class MetaLearningModels:
         model.compile(optimizer=Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_large_transformer(self, seq_len=60, features=50, d_model=256) -> Model:
+    def _create_large_transformer(self, seq_len=60, features=50, d_model=256) -> Any:
         """Create large transformer."""
         inputs = Input(shape=(seq_len, features))
         
@@ -440,7 +440,7 @@ class MetaLearningModels:
         model.compile(optimizer=AdamW(0.0001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_bert_like(self, seq_len=60, features=50) -> Model:
+    def _create_bert_like(self, seq_len=60, features=50) -> Any:
         """Create BERT-like model."""
         inputs = Input(shape=(seq_len, features))
         
@@ -461,7 +461,7 @@ class MetaLearningModels:
         model.compile(optimizer=AdamW(0.0001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_attention_model(self, seq_len=60, features=50) -> Model:
+    def _create_attention_model(self, seq_len=60, features=50) -> Any:
         """Create attention model."""
         inputs = Input(shape=(seq_len, features))
         
@@ -480,7 +480,7 @@ class MetaLearningModels:
         model.compile(optimizer=Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_residual_lstm(self, seq_len=60, features=50) -> Model:
+    def _create_residual_lstm(self, seq_len=60, features=50) -> Any:
         """Create residual LSTM."""
         inputs = Input(shape=(seq_len, features))
         
@@ -506,7 +506,7 @@ class MetaLearningModels:
         model.compile(optimizer=Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_dense_lstm(self, seq_len=60, features=50) -> Model:
+    def _create_dense_lstm(self, seq_len=60, features=50) -> Any:
         """Create dense LSTM."""
         inputs = Input(shape=(seq_len, features))
         
@@ -521,7 +521,7 @@ class MetaLearningModels:
         model.compile(optimizer=Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_conv_lstm(self, seq_len=60, features=50) -> Model:
+    def _create_conv_lstm(self, seq_len=60, features=50) -> Any:
         """Create Conv-LSTM."""
         inputs = Input(shape=(seq_len, features))
         
@@ -538,7 +538,7 @@ class MetaLearningModels:
         model.compile(optimizer=Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_tcn(self, seq_len=60, features=50) -> Model:
+    def _create_tcn(self, seq_len=60, features=50) -> Any:
         """Create Temporal Convolutional Network."""
         inputs = Input(shape=(seq_len, features))
         
@@ -554,7 +554,7 @@ class MetaLearningModels:
         model.compile(optimizer=Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_wavenet(self, seq_len=60, features=50) -> Model:
+    def _create_wavenet(self, seq_len=60, features=50) -> Any:
         """Create WaveNet."""
         inputs = Input(shape=(seq_len, features))
         
@@ -570,11 +570,11 @@ class MetaLearningModels:
         model.compile(optimizer=Adam(0.001), loss='binary_crossentropy', metrics=['accuracy'])
         return model
     
-    def _create_tcn_advanced(self, seq_len=60, features=50) -> Model:
+    def _create_tcn_advanced(self, seq_len=60, features=50) -> Any:
         """Create advanced TCN."""
         return self._create_tcn(seq_len, features)
     
-    def _create_autoencoder(self, seq_len=60, features=50) -> Model:
+    def _create_autoencoder(self, seq_len=60, features=50) -> Any:
         """Create autoencoder."""
         inputs = Input(shape=(seq_len, features))
         
@@ -600,7 +600,7 @@ class MetaLearningModels:
         
         return classifier_model
     
-    def _create_vae(self, seq_len=60, features=50) -> Model:
+    def _create_vae(self, seq_len=60, features=50) -> Any:
         """Create Variational Autoencoder."""
         inputs = Input(shape=(seq_len, features))
         
@@ -634,7 +634,7 @@ class MetaLearningModels:
         
         return classifier_model
     
-    def _create_gan(self) -> Model:
+    def _create_gan(self) -> Any:
         """Create GAN (simplified)."""
         # Simplified GAN - just return a basic classifier
         return self._create_cnn_1d()
