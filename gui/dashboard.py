@@ -188,21 +188,35 @@ class Dashboard:
             st.session_state.crash_alerts = []
     
     async def initialize(self):
-        """Initialize components."""
-        await self.scanner.connect()
-        await self.strategy.initialize()
-        # 5x UPGRADE - Initialize ultra advanced ML models
+        """Initialize components - optimized with timeouts to prevent hanging."""
+        try:
+            # Initialize scanner with timeout
+            await asyncio.wait_for(self.scanner.connect(), timeout=5.0)
+        except asyncio.TimeoutError:
+            self.logger.warning("Scanner connection timed out, continuing...")
+        except Exception as e:
+            self.logger.warning(f"Scanner init error (non-critical): {e}")
+        
+        try:
+            # Initialize strategy with timeout (ML models can take time)
+            await asyncio.wait_for(self.strategy.initialize(), timeout=20.0)
+        except asyncio.TimeoutError:
+            self.logger.warning("Strategy initialization timed out, continuing with basic features...")
+        except Exception as e:
+            self.logger.warning(f"Strategy init error (non-critical): {e}")
+        
+        # 5x UPGRADE - Initialize ultra advanced ML models (non-blocking)
         if self.ultra_available and self.ultra_ml:
             try:
-                await self.ultra_ml.initialize()
-            except Exception as e:
+                await asyncio.wait_for(self.ultra_ml.initialize(), timeout=10.0)
+            except (asyncio.TimeoutError, Exception) as e:
                 self.logger.warning(f"Could not initialize ultra ML: {e}")
         
-        # 10x UPGRADE - Initialize quantum & meta-learning ML models
+        # 10x UPGRADE - Initialize quantum & meta-learning ML models (non-blocking)
         if self.quantum_meta_available and self.meta_ml:
             try:
-                await self.meta_ml.initialize()
-            except Exception as e:
+                await asyncio.wait_for(self.meta_ml.initialize(), timeout=10.0)
+            except (asyncio.TimeoutError, Exception) as e:
                 self.logger.warning(f"Could not initialize quantum/meta ML: {e}")
         
         # 50x UPGRADE - Profit Guarantee System is automatically initialized in strategy
@@ -2190,11 +2204,11 @@ class Dashboard:
             debug_mode = st.checkbox("Debug Mode", value=False)
             st.session_state.debug_mode = debug_mode
             
-            # Auto-refresh toggle - default to 1 second for live updates
+            # Auto-refresh toggle - default to 30 seconds to avoid overload
             auto_refresh = st.checkbox("Auto Refresh (Live 24/7)", value=True)
             
             if auto_refresh:
-                refresh_interval = st.slider("Update Every (seconds)", 1, 60, 1, help="1 second = live updates, higher = less frequent")
+                refresh_interval = st.slider("Update Every (seconds)", 10, 300, 30, help="10-300 seconds. Lower = more updates but slower. Recommended: 30-60 seconds")
                 st.session_state.refresh_interval = refresh_interval
             else:
                 st.session_state.refresh_interval = None
@@ -2245,9 +2259,17 @@ def main():
         init_status.text("🔌 Connecting to market scanner... (30%)")
         init_progress.progress(0.30)
         
-        loop.run_until_complete(dashboard.initialize())
+        # Initialize with timeout to prevent hanging
+        try:
+            loop.run_until_complete(asyncio.wait_for(dashboard.initialize(), timeout=30.0))
+            init_status.text("✅ Dashboard ready! (100%)")
+        except asyncio.TimeoutError:
+            init_status.text("⚠️ Dashboard loading (some features may be limited)...")
+            print("Warning: Initialization timed out, but dashboard will still work")
+        except Exception as e:
+            init_status.text(f"⚠️ Dashboard ready (some features may be limited)")
+            print(f"Warning: Initialization error (non-critical): {e}")
         
-        init_status.text("✅ Dashboard ready! (100%)")
         init_progress.progress(1.0)
         
         import time
@@ -2280,11 +2302,17 @@ def main():
         # Start at 1%
         update_progress(1, "Starting update...")
         
-        # Update data with progress callback
-        loop.run_until_complete(dashboard.update_data(progress_callback=update_progress))
-        
-        # Ensure we end at 100%
-        update_progress(100, "✅ Complete!")
+        # Update data with progress callback and timeout to prevent hanging
+        try:
+            loop.run_until_complete(asyncio.wait_for(
+                dashboard.update_data(progress_callback=update_progress), 
+                timeout=60.0
+            ))
+            # Ensure we end at 100%
+            update_progress(100, "✅ Complete!")
+        except asyncio.TimeoutError:
+            update_progress(100, "⚠️ Update timed out - showing cached data")
+            status_text.warning("Update took too long, showing last known data")
         
         # Clear progress after a moment
         import time
