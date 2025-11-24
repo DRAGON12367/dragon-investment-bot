@@ -420,33 +420,33 @@ class Dashboard:
                 else:
                     self.logger.warning(f"⚠️ API returned empty data - may be rate limited")
             except asyncio.TimeoutError:
-                    self.logger.warning("⚠️ Market data fetch timed out - trying cached data as fallback")
-                    # Only use cache as last resort if API completely fails
-                    cache_has_data = (cache_key in st.session_state and 
-                                    len(st.session_state.get(cache_key, {})) > 0)
-                    if cache_has_data:
-                        market_data = st.session_state[cache_key]
-                        self.logger.warning(f"⚠️ Using cached data as fallback: {len(market_data)} assets (API timeout)")
-                    elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
-                        market_data = st.session_state.market_data
-                        self.logger.warning(f"⚠️ Using session data as fallback: {len(market_data)} assets (API timeout)")
-                    else:
-                        # Only use fallback if absolutely no data available
-                        market_data = self._create_fallback_data()
-                        self.logger.warning(f"⚠️ Using minimal fallback data: {len(market_data)} assets")
-                except Exception as fetch_error:
-                    self.logger.error(f"❌ Error in live market data fetch: {fetch_error}")
-                    # Only use cache as last resort if API completely fails
-                    cache_has_data = (cache_key in st.session_state and 
-                                    len(st.session_state.get(cache_key, {})) > 0)
-                    if cache_has_data:
-                        market_data = st.session_state[cache_key]
-                        self.logger.warning(f"⚠️ Using cached data as fallback: {len(market_data)} assets (API error)")
-                    elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
-                        market_data = st.session_state.market_data
-                        self.logger.warning(f"⚠️ Using session data as fallback: {len(market_data)} assets (API error)")
-                    else:
-                        market_data = {}
+                self.logger.warning("⚠️ Market data fetch timed out - trying cached data as fallback")
+                # Only use cache as last resort if API completely fails
+                cache_has_data = (cache_key in st.session_state and 
+                                len(st.session_state.get(cache_key, {})) > 0)
+                if cache_has_data:
+                    market_data = st.session_state[cache_key]
+                    self.logger.warning(f"⚠️ Using cached data as fallback: {len(market_data)} assets (API timeout)")
+                elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
+                    market_data = st.session_state.market_data
+                    self.logger.warning(f"⚠️ Using session data as fallback: {len(market_data)} assets (API timeout)")
+                else:
+                    # Only use fallback if absolutely no data available
+                    market_data = self._create_fallback_data()
+                    self.logger.warning(f"⚠️ Using minimal fallback data: {len(market_data)} assets")
+            except Exception as fetch_error:
+                self.logger.error(f"❌ Error in live market data fetch: {fetch_error}")
+                # Only use cache as last resort if API completely fails
+                cache_has_data = (cache_key in st.session_state and 
+                                len(st.session_state.get(cache_key, {})) > 0)
+                if cache_has_data:
+                    market_data = st.session_state[cache_key]
+                    self.logger.warning(f"⚠️ Using cached data as fallback: {len(market_data)} assets (API error)")
+                elif 'market_data' in st.session_state and len(st.session_state.market_data) > 0:
+                    market_data = st.session_state.market_data
+                    self.logger.warning(f"⚠️ Using session data as fallback: {len(market_data)} assets (API error)")
+                else:
+                    market_data = {}
             
             # After fetch attempt, handle empty data
             if len(market_data) == 0:
