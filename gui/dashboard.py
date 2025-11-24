@@ -419,7 +419,7 @@ class Dashboard:
                     self.logger.info(f"✅ Successfully loaded {len(market_data)} live assets from APIs")
                 else:
                     self.logger.warning(f"⚠️ API returned empty data - may be rate limited")
-                except asyncio.TimeoutError:
+            except asyncio.TimeoutError:
                     self.logger.warning("⚠️ Market data fetch timed out - trying cached data as fallback")
                     # Only use cache as last resort if API completely fails
                     cache_has_data = (cache_key in st.session_state and 
