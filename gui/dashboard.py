@@ -918,27 +918,64 @@ class Dashboard:
             
             price = data.get('price', 0)
             if price > 0:
+                # REALISTIC AI CONFIDENCE CALCULATION
                 change_24h = data.get('change_percent', 0) or 0
                 volume = data.get('volume', 0) or 0
                 high_24h = data.get('high', price)
                 low_24h = data.get('low', price)
+                market_cap = data.get('market_cap', 0) or 0
                 
-                # Calculate a more sophisticated score
-                # Base score from 24h change (0.15 to 0.45)
-                change_score = min(0.45, max(0.15, abs(change_24h) / 100.0 + 0.2)) if change_24h != 0 else 0.3
+                # 1. Momentum Score (0-30%)
+                price_position = (price - low_24h) / (high_24h - low_24h) if high_24h != low_24h else 0.5
+                momentum = change_24h / 100.0
+                momentum_score = min(0.30, max(0.05, (abs(momentum) * 0.25 + price_position * 0.05)))
                 
-                # Volume bonus (0 to 0.1)
-                volume_bonus = min(0.1, volume / 1e9 * 0.1) if volume > 0 else 0.05
+                # 2. Volume/Liquidity Score (0-20%)
+                if market_cap > 0:
+                    volume_ratio = volume / market_cap if market_cap > 0 else 0
+                    volume_score = min(0.20, max(0.05, volume_ratio * 100))
+                else:
+                    volume_score = min(0.20, max(0.05, volume / 1e9 * 0.15))
                 
-                # Volatility bonus (0 to 0.1)
+                # 3. Volatility/Risk Score (0-15%)
                 volatility = abs(high_24h - low_24h) / price if price > 0 and high_24h != low_24h else 0
-                volatility_bonus = min(0.1, volatility * 2)
+                if 0.02 <= volatility <= 0.10:
+                    volatility_score = 0.15
+                elif volatility < 0.02:
+                    volatility_score = 0.10
+                else:
+                    volatility_score = max(0.05, 0.15 - (volatility - 0.10) * 0.5)
                 
-                # Position in list bonus (earlier = better, 0 to 0.1)
-                position_bonus = max(0, (50 - len(all_crypto_buys)) / 500.0)
+                # 4. Market Position Score (0-10%)
+                if market_cap > 1e9:
+                    market_position_score = 0.10
+                elif market_cap > 1e8:
+                    market_position_score = 0.07
+                else:
+                    market_position_score = 0.05
                 
-                # Combine scores (total: 0.2 to 0.75)
-                calculated_score = min(0.75, change_score + volume_bonus + volatility_bonus + position_bonus)
+                # 5. Trend Strength (0-15%)
+                if price_position > 0.7:
+                    trend_score = 0.15
+                elif price_position < 0.3:
+                    trend_score = 0.12
+                else:
+                    trend_score = 0.08
+                
+                # 6. Risk Adjustment (-5% to +5%)
+                if abs(change_24h) > 20:
+                    risk_adjustment = -0.05
+                elif abs(change_24h) < 0.5:
+                    risk_adjustment = -0.03
+                else:
+                    risk_adjustment = 0.02
+                
+                # Combine (realistic range: 15% to 85%)
+                calculated_score = (
+                    momentum_score + volume_score + volatility_score +
+                    market_position_score + trend_score + risk_adjustment
+                )
+                calculated_score = min(0.85, max(0.15, calculated_score))
                 
                 all_crypto_buys.append({
                     'symbol': symbol,
