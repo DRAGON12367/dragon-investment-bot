@@ -1109,6 +1109,9 @@ class Dashboard:
                     }
                     price = placeholder_prices.get(symbol, 1.0)
                 
+                # Calculate symbol hash early (used for consistent variation)
+                symbol_hash = int(hashlib.md5(symbol.encode()).hexdigest()[:2], 16)
+                
                 # If no real change_24h, use realistic placeholder based on symbol characteristics
                 if change_24h == 0:
                     # Major cryptos: smaller changes, altcoins: larger changes
@@ -1144,8 +1147,7 @@ class Dashboard:
                 else:
                     stability_bonus = 0.03  # Altcoins = more volatile
                 
-                # Use symbol hash for consistent but varied scoring
-                symbol_hash = int(hashlib.md5(symbol.encode()).hexdigest()[:2], 16)
+                # Use symbol hash for consistent but varied scoring (already calculated above)
                 variation = (symbol_hash % 15) / 100.0  # 0 to 0.15 variation
                 
                 calculated_score = min(0.80, max(0.20, base_score + stability_bonus + variation))
