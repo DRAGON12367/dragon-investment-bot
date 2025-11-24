@@ -1067,42 +1067,43 @@ class Dashboard:
                 symbol_hash = int(hashlib.md5(symbol.encode()).hexdigest()[:2], 16)
                 variation = (symbol_hash % 15) / 100.0  # 0 to 0.15 variation
                 
-                        calculated_score = min(0.80, max(0.20, base_score + stability_bonus + variation))
-                        
-                        # REALISTIC PROFIT POTENTIAL for hardcoded fallback
-                        # Top cryptos have more conservative targets
-                        if position_in_list < 10:  # Top 10
-                            profit_potential = 0.08 - (position_in_list / 10.0 * 0.02)  # 8% to 6%
-                        elif position_in_list < 20:  # Top 20
-                            profit_potential = 0.10 - ((position_in_list - 10) / 10.0 * 0.02)  # 10% to 8%
-                        elif position_in_list < 30:  # Top 30
-                            profit_potential = 0.12 - ((position_in_list - 20) / 10.0 * 0.02)  # 12% to 10%
-                        else:  # Rest
-                            profit_potential = 0.15 - ((position_in_list - 30) / 20.0 * 0.05)  # 15% to 10%
-                        
-                        # Major cryptos get more conservative targets
-                        if symbol in major_cryptos:
-                            profit_potential = profit_potential * 0.85  # 15% reduction
-                        
-                        # Add variation based on symbol hash
-                        profit_variation = (symbol_hash % 10) / 100.0  # 0 to 0.10 variation
-                        profit_potential = profit_potential + profit_variation - 0.05  # -5% to +5%
-                        
-                        # Clamp to realistic range (3% to 25%)
-                        profit_potential = min(0.25, max(0.03, profit_potential))
-                        
-                        all_crypto_buys.append({
-                            'symbol': symbol,
-                            'asset_type': 'crypto',
-                            'current_price': price,
-                            'target_price': price * (1 + profit_potential),
-                            'action': 'BUY',
-                            'profit_score': calculated_score,
-                            'profit_potential': profit_potential,
-                            'change_24h': 0,
-                            'risk_reward_ratio': profit_potential / 0.05  # Assume 5% stop loss
-                        })
-                        seen_symbols.add(symbol)
+                calculated_score = min(0.80, max(0.20, base_score + stability_bonus + variation))
+                
+                # REALISTIC PROFIT POTENTIAL for hardcoded fallback
+                # Top cryptos have more conservative targets
+                if position_in_list < 10:  # Top 10
+                    profit_potential = 0.08 - (position_in_list / 10.0 * 0.02)  # 8% to 6%
+                elif position_in_list < 20:  # Top 20
+                    profit_potential = 0.10 - ((position_in_list - 10) / 10.0 * 0.02)  # 10% to 8%
+                elif position_in_list < 30:  # Top 30
+                    profit_potential = 0.12 - ((position_in_list - 20) / 10.0 * 0.02)  # 12% to 10%
+                else:  # Rest
+                    profit_potential = 0.15 - ((position_in_list - 30) / 20.0 * 0.05)  # 15% to 10%
+                
+                # Major cryptos get more conservative targets
+                if symbol in major_cryptos:
+                    profit_potential = profit_potential * 0.85  # 15% reduction
+                
+                # Add variation based on symbol hash
+                profit_variation = (symbol_hash % 10) / 100.0  # 0 to 0.10 variation
+                profit_potential = profit_potential + profit_variation - 0.05  # -5% to +5%
+                
+                # Clamp to realistic range (3% to 25%)
+                profit_potential = min(0.25, max(0.03, profit_potential))
+                risk_reward_ratio = profit_potential / 0.05
+                
+                all_crypto_buys.append({
+                    'symbol': symbol,
+                    'asset_type': 'crypto',
+                    'current_price': price,
+                    'target_price': price * (1 + profit_potential),
+                    'action': 'BUY',
+                    'profit_score': calculated_score,
+                    'profit_potential': profit_potential,
+                    'change_24h': 0,
+                    'risk_reward_ratio': risk_reward_ratio
+                })
+                seen_symbols.add(symbol)
         
         # Re-sort by profit_score
         all_crypto_buys.sort(key=lambda x: x.get('profit_score', 0), reverse=True)
