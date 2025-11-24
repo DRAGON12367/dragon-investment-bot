@@ -977,16 +977,39 @@ class Dashboard:
                 )
                 calculated_score = min(0.85, max(0.15, calculated_score))
                 
+                # REALISTIC PROFIT POTENTIAL CALCULATION
+                momentum_factor = abs(change_24h) / 100.0 if change_24h != 0 else 0.02
+                
+                if volatility > 0.10:
+                    profit_potential = min(0.25, 0.08 + volatility * 0.5)
+                elif volatility > 0.05:
+                    profit_potential = min(0.18, 0.06 + volatility * 0.4)
+                else:
+                    profit_potential = min(0.12, 0.04 + volatility * 0.3)
+                
+                if change_24h > 5:
+                    profit_potential = min(0.30, profit_potential * 1.3)
+                elif change_24h < -5:
+                    profit_potential = min(0.25, profit_potential * 1.2)
+                
+                if market_cap > 1e10:
+                    profit_potential = profit_potential * 0.85
+                elif market_cap > 1e9:
+                    profit_potential = profit_potential * 0.90
+                
+                profit_potential = min(0.30, max(0.03, profit_potential))
+                risk_reward_ratio = profit_potential / 0.05
+                
                 all_crypto_buys.append({
                     'symbol': symbol,
                     'asset_type': 'crypto',
                     'current_price': price,
-                    'target_price': price * 1.1,
+                    'target_price': price * (1 + profit_potential),
                     'action': 'BUY',
                     'profit_score': calculated_score,
-                    'profit_potential': 0.1,
+                    'profit_potential': profit_potential,
                     'change_24h': change_24h,
-                    'risk_reward_ratio': 1.0
+                    'risk_reward_ratio': risk_reward_ratio
                 })
                 seen_symbols.add(symbol)
         
