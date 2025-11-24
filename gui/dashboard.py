@@ -424,7 +424,7 @@ class Dashboard:
                     if fast_load:
                         progress_callback(15, "Fast loading top assets...")
                     else:
-                    progress_callback(15, "Fetching market data...")
+                        progress_callback(15, "Fetching market data...")
                 try:
                     # Add shorter timeout to prevent hanging - use fallback if slow
                     market_data = await asyncio.wait_for(
